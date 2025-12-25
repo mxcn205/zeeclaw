@@ -196,8 +196,6 @@
       overflow:hidden;
     }
 
-    .marquee{ display:none; }
-
     .playfield{
       position:absolute;
       left:12px; right:12px;
@@ -395,10 +393,7 @@
             <div class="revealCard">
               <div class="big pulse" id="revealPlaceholder">Win something to reveal a note…</div>
               <div class="msg hidden" id="revealMsg"></div>
-              <!-- ✅ removed "Pulled from..." line entirely -->
             </div>
-
-            <!-- ✅ removed "Pull again (same prompt)" button entirely -->
           </div>
         </div>
       </div>
@@ -428,6 +423,7 @@ const HOME_GIFS = {
   sad:     "assets/buttons/ZeeMMSad.gif",
 };
 
+/* ✅ Messages replaced exactly as you provided */
 const PROMPTS = [
   {
     id: "happy",
@@ -435,9 +431,10 @@ const PROMPTS = [
     blurb: "...And a shared joy is a double joy",
     homeGif: HOME_GIFS.happy,
     prizes: [
-      { img: "assets/prizes/ZeeGift3.png", label: "Celebration", note: "I LOVE seeing you happy.\nTell me what happened so I can celebrate properly!!!" },
-      { img: "assets/prizes/ZeeGift.png", label: "Proud Moment", note: "You deserve this feeling.\nI’m so proud of you." },
-      { img: "assets/prizes/ZeeHeartEnvelope.png", label: "Love Note", note: "I’m smiling like an idiot thinking about you right now.\nKeep shining." },
+      { img: "assets/prizes/ZeeGift3.png", label: "Gift", note: "No way… wow… my girlfriend is happy… my baby had a good day!!! This is so rare… okay jokes aside I’m glad you’re doing well! You should be proud of yourself even if you being happy isn’t because of some achievement, just be proud that you had a good day, we gotta celebrate these small wins :)" },
+      { img: "assets/prizes/ZeeGift.png",  label: "Gift", note: "Greetings my cheerful, joyous, and whimsical girl :p I’m glad you’re feeling good! I want to hear all about it :) I can’t wait to hear about how your father got a terminal illness, how you found the PERFECT knee-high boots for ₹100, how you got your 4837th Yuji banger… Whatever it is I’m glad some good has happened in your life :D" },
+      { img: "assets/prizes/ZeeHeartEnvelope.png", label: "Envelope", note: "Hi lovely! I’m glad to hear you’re doing well :) I know you have a lot going on in your life so I’m glad the universe has given you some good days :p Jokes aside you deserve this moment so much sweetheart, and I’m sure you’ll have countless days even better than this one! I love you so much and I hope reading this lifted your mood even higher :>" },
+      { img: "assets/prizes/ZeeGift2.png", label: "Special", note: "Wow it’s really your lucky day… you’re already happy AND you found the special message! Send me “hell froze over” and I’ll send you a selfie no matter where I’m at or what I’m doing :) If I’m asleep or don’t respond within an hour I’ll send you a selfie AND a short talking video :p" },
     ]
   },
   {
@@ -446,10 +443,10 @@ const PROMPTS = [
     blurb: "Breathe. I’m right here with you.",
     homeGif: HOME_GIFS.stressed,
     prizes: [
-      { img: "assets/prizes/ZeeHeartEnvelope.png", label: "Grounding", note: "Inhale 4… hold 4… exhale 6.\nYou’ve got this. I’ve got you." },
-      { img: "assets/prizes/ZeeGift2.png", label: "Reset", note: "Drink water. Unclench your shoulders.\nText me one thing you need right now." },
-      { img: "assets/prizes/ZeeGift.png", label: "Tiny Step", note: "Pick the smallest next step.\nDo it for 5 minutes. That’s a win." },
-      { img: "assets/prizes/ZeeMessageInBottle.png", label: "Calm", note: "You don’t have to carry everything alone.\nI’m here." },
+      { img: "assets/prizes/ZeeHeartEnvelope.png", label: "Envelope", note: "Hi my love, I’m not sure what’s causing you to feel stressed, but if it’s something like school, just remember to take breaks, and trust that you’re going to get through this whether it’s a paper or a test you have to study for. You always do a lot better than you expect and you will again!" },
+      { img: "assets/prizes/ZeeGift.png", label: "Gift", note: "Hi bwabie :p I’m sorry you’re feeling stressed, but I’m sure you’ll be able to get through it! If it’s something you can control like schoolwork, just remember to take breaks and trust that you’ll do well like you always do. If it’s not, maybe talk to me or your mom if you feel like it, if not just try to distract yourself, it’s going to pass and I know you’ll feel better soon! I love you and I’m here if you want to talk okay?" },
+      { img: "assets/prizes/ZeeGift3.png", label: "Special", note: "Hi my treasure :) you found the special message! Now you HAVE to send me “I hate you I’m not doing this one” along with one of your assignments for school and I’ll do it for you to take some of your workload :) No but seriously if you’re stressed with some kind of work let me help, you should be relaxing like the princess you are…" },
+      { img: "assets/prizes/ZeeMessageInBottle.png", label: "Bottle", note: "Hi angel, if you’re seeing this you’re probably feeling quite overwhelmed, so no matter what it is, whether or not you can control it, just take a break. Distract yourself or just take some deep breaths and try to relax for 10 minutes or so. If you’re anxious tell yourself that you can worry again after these 10 minutes, but for now just try to calm yourself so you can think better <3" },
     ]
   },
   {
@@ -458,11 +455,10 @@ const PROMPTS = [
     blurb: "A few reminders I’m with you, even far away.",
     homeGif: HOME_GIFS.miss,
     prizes: [
-      { img: "assets/prizes/ZeeHeartEnvelope.png", label: "Love Letter", note: "I miss you too.\nClose your eyes for 5 seconds and imagine I’m hugging you.\nWe’ll be together soon." },
-      { img: "assets/prizes/ZeeMessageInBottle.png", label: "Message in a Bottle", note: "Distance is annoying, but it doesn’t change what we are.\nI’m proud of you. I love you." },
-      { img: "assets/prizes/ZeeGift.png", label: "Little Surprise", note: "Tiny reminder: you’re my favorite person.\nAlways." },
-      { img: "assets/prizes/ZeeGift2.png", label: "Cozy Gift", note: "Go drink water and do one small self-care thing.\nThen text me one thing you want me to say to you." },
-      { img: "assets/prizes/ZeeGift3.png", label: "Big Hug", note: "If I were there, I’d pull you into the biggest hug.\nSo here it is, delivered digitally: *hug*." },
+      { img: "assets/prizes/ZeeMessageInBottle.png", label: "Bottle", note: "Hi baby, I’m guessing that I’m asleep or busy by the time you’re reading this because otherwise you could just text me, but don’t worry I’m sure we’ll be able to talk soon! Take care of yourself in the meantime okay? Remember to eat your meals, drink water, and don’t stress yourself out too much! I love you and I’m always a call away if you need me :)" },
+      { img: "assets/prizes/ZeeHeartEnvelope.png", label: "Envelope", note: "Hi my love, I miss you so much :(( Even if I’m asleep right now I’m probably dreaming about you and wishing you were here snuggled up against me :p Maybe look through my pictures or pick out some more notes here to read, I’ll be with you soon I’m sure my heart <3" },
+      { img: "assets/prizes/ZeeGift.png", label: "Special", note: "Aww darling I miss you too, no matter what it is that I’m doing right now I’m sure it would be so much better with you by my side :( This message is special: if I’m awake send me “VN” in all caps and I’ll send you a 5-minute voice note about what I’ve been up to, if I’m asleep then I’ll send you a 10-minute one when I wake up :)" },
+      { img: "assets/prizes/ZeeGift2.png", label: "Gift", note: "Hi angel, I’m sorry I can’t be with you right now, if I had the option to I would drop whatever I’m doing to hold you and rock you in my arms. Maybe I should do that… I’m gonna book a flight to India right now… See you soon gorgeous, no more missing me!" },
     ]
   },
   {
@@ -471,10 +467,10 @@ const PROMPTS = [
     blurb: "A shared burden is half a burden...",
     homeGif: HOME_GIFS.sad,
     prizes: [
-      { img: "assets/prizes/ZeeHeartEnvelope.png", label: "Soft Note", note: "You don’t have to be strong right now.\nI’m here.\nEven quietly, I’m here." },
-      { img: "assets/prizes/ZeeGift2.png", label: "Warmth", note: "Breathe out slowly.\nUnclench your jaw.\nYou’re safe. You’re loved." },
-      { img: "assets/prizes/ZeeMessageInBottle.png", label: "Comfort Bottle", note: "Bad days aren’t forever.\nI love you through the messy parts too." },
-      { img: "assets/prizes/ZeeGift.png", label: "Tiny Win", note: "Pick one small thing and do it for 5 minutes.\nThat counts. I’m proud of you." },
+      { img: "assets/prizes/ZeeHeartEnvelope.png", label: "Envelope", note: "Hi sweetheart, I’m not sure what’s making you sad right now, but what I am sure is that you’ll get through it. You’ve a very strong person and you’ve gotten through worse before. I know it’s hard for you to see a way out of this situation right now, but I don’t want you to trust that the situation will be fixed magically, rather trust that you’re very resilient and you will be okay given some time! If you ever want to talk I’m here for you!" },
+      { img: "assets/prizes/ZeeMessageInBottle.png", label: "Bottle", note: "Hey dear, I’m sorry that you had to go to this section of the app :( If you want to talk about what’s going on with me I’d gladly do so, no matter what it is or what I’m doing right now, I’ll always have time for you :) If you don’t feel like it, that's okay too, just remember to take care of yourself okay? Maybe open a few more of these or distract yourself with a comfort movie. I love you and I’ll be here if you ever need me <3" },
+      { img: "assets/prizes/ZeeGift.png", label: "Gift", note: "Hi sweetie, I don’t know what exactly is happening right now, but I just wanted to let you know that I’m here with you no matter what it is, and you can always talk to me if you need to vent. If not, maybe you could talk to your mom, or look at pretty outfits on Pinterest to take your mind off things! Everything’s going to be okay my love, and until it’s not you have me, your mom, and your friends to help you deal with it together!" },
+      { img: "assets/prizes/ZeeGift2.png", label: "Special", note: "Aww baby I hear you’re going through some tough times right now :( Let me know if I can do anything to help… actually since this is the special message, text me “GIVE ME TWENTY DOLLARS” in all caps for a totally secret mystery prize… and use that prize to get yourself something nice to eat or some pretty clothes to cheer you up a bit :)" },
     ]
   },
 ];
@@ -539,7 +535,6 @@ backdrop.addEventListener("click", (e) => { if(e.target === backdrop) closeModal
 
 function setClawStage(stage){ claw.src = CLAW_SRC[stage]; }
 
-/** Status pill behavior */
 function setStatus(mode){
   if(mode === "grabbing") statusPill.textContent = "Grabbing message...";
   else if(mode === "done") statusPill.textContent = "Message ready!";
@@ -554,7 +549,7 @@ function clearReveal(){
 function showReveal(prize){
   revealPlaceholder.classList.add("hidden");
   revealMsg.classList.remove("hidden");
-  revealMsg.textContent = prize.note;  // ✅ no "Pulled from..." anywhere
+  revealMsg.textContent = prize.note;
 }
 
 function clearPrizes(){
@@ -602,7 +597,7 @@ function positionHeldPrize(prizeEl){
   const pf = getPlayfieldRect();
   const c = getClawCenterInPlayfield();
   prizeEl.style.left = `${(c.x / pf.width) * 100}%`;
-  prizeEl.style.top  = `${((c.y + HOLD_Y_OFFSET_PX) / pf.height) * 100}%`;
+  prizeEl.style.top  = `${((c.y + 56) / pf.height) * 100}%`;
 }
 
 function openPrompt(id){
@@ -639,7 +634,7 @@ function spawnPrizes(prompt){
     el.style.setProperty("--rot", `${(Math.random()*16-8).toFixed(1)}deg`);
     el.style.setProperty("--prizeSize", `${PRIZE_SIZE}px`);
     el.dataset.index = String(i);
-    el.innerHTML = `<img src="${pr.img}" alt="${pr.label}" draggable="false" />`;
+    el.innerHTML = `<img src="${pr.img}" alt="prize" draggable="false" />`;
     playfield.appendChild(el);
 
     prizeElByIndex.set(i, el);
@@ -732,7 +727,7 @@ async function doPull(){
   removeAvailableIndex(pickedIndex);
 
   setStatus("done");
-  hintText.textContent = "Prize dropped!";  // ✅ updated text
+  hintText.textContent = "Prize dropped!";
   showReveal(pickedPrize);
 
   setTimeout(() => { if(!isBusy) setStatus("ready"); }, 900);
