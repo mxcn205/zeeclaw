@@ -109,7 +109,6 @@
       line-height: 1.25;
     }
 
-    /* Popup */
     .modalBackdrop{
       position:fixed; inset:0;
       background: rgba(0,0,0,.55);
@@ -200,7 +199,6 @@
       background: rgba(255,255,255,.20);
     }
 
-    /* ✅ Narrow drop image area: left 25% of playfield */
     .dropImg{
       position:absolute;
       left: 0;
@@ -214,7 +212,6 @@
       user-select:none;
     }
 
-    /* ✅ keep outline above drop image */
     .playfieldOutline{
       position:absolute;
       inset:0;
@@ -387,7 +384,6 @@
         <div class="machinePane">
           <div class="machine" id="machine">
             <div class="playfield" id="playfield">
-              <!-- ✅ Narrow drop area image: left 25% -->
               <img class="dropImg" src="assets/machine/ZeeClawDrop.png" alt="" aria-hidden="true" />
 
               <div class="clawRig">
@@ -440,10 +436,8 @@ const START_X_PCT = 10;
 const START_Y_PX  = 18;
 const HOLD_Y_OFFSET_PX = 56;
 const GRAB_POINT_Y_FRAC = 0.74;
-
-/* ✅ Left 25% is drop zone, right 75% is spawn zone */
 const DROP_ZONE_PCT = 25;
-const SPAWN_MIN_X_PCT = DROP_ZONE_PCT; // strict: prizes never appear left of 25%
+const SPAWN_MIN_X_PCT = DROP_ZONE_PCT;
 
 const HOME_GIFS = {
   happy:   "assets/buttons/ZeeMMHappy.gif",
@@ -646,7 +640,6 @@ function openPrompt(id){
   hintText.textContent = "Press DROP CLAW to grab a prize.";
 }
 
-/* ✅ spawn ONLY in right 75% */
 function spawnPrizes(prompt){
   clearPrizes();
 
@@ -656,7 +649,7 @@ function spawnPrizes(prompt){
     {x: 72, y: 86}, {x: 48, y: 84}, {x: 60, y: 80},
     {x: 90, y: 74}, {x: 82, y: 72},
     {x: 68, y: 90}, {x: 92, y: 86}, {x: 58, y: 90},
-  ].filter(s => s.x >= SPAWN_MIN_X_PCT + 2); // +2 for a little buffer
+  ].filter(s => s.x >= SPAWN_MIN_X_PCT + 2);
 
   const shuffled = [...spots].sort(() => Math.random() - 0.5);
 
@@ -722,7 +715,6 @@ async function doPull(){
   const targetCenterX = (tRect.left + tRect.width/2) - pf.left;
   let targetXPercent = (targetCenterX / pf.width) * 100;
 
-  /* ✅ safety clamp so claw never targets left 25% */
   targetXPercent = Math.max(targetXPercent, SPAWN_MIN_X_PCT + 2);
 
   const targetCenterY = (tRect.top + tRect.height/2) - pf.top;
@@ -765,7 +757,7 @@ async function doPull(){
   removeAvailableIndex(pickedIndex);
 
   setStatus("done");
-  hintText.textContent = "Prize dropped!";
+  hintText.textContent = "Press DROP CLAW to grab a prize.";
   showReveal(pickedPrize);
 
   setTimeout(() => { if(!isBusy) setStatus("ready"); }, 900);
