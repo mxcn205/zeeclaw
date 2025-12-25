@@ -765,7 +765,7 @@ async function doPull(){
   removeAvailableIndex(pickedIndex);
 
   setStatus("done");
-  hintText.textContent = "Prize dropped!";
+  hintText.textContent = "Press DROP CLAW to grab a prize.";
   showReveal(pickedPrize);
 
   setTimeout(() => { if(!isBusy) setStatus("ready"); }, 900);
