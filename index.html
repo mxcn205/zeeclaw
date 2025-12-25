@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Open When… (Claw Machine)</title>
+  <title>Open When…</title>
 
   <style>
     :root{
@@ -39,62 +39,84 @@
     }
 
     .wrap{width:min(980px,100%)}
+
     header{
       display:flex;
       align-items:flex-end;
-      justify-content:space-between;
+      justify-content:flex-start;
       gap:16px;
       margin-bottom:18px;
     }
-    h1{margin:0;font-size: clamp(24px, 4vw, 38px);letter-spacing:.2px;}
-    .sub{margin:6px 0 0;color:var(--muted);max-width:60ch;line-height:1.4;}
-    .badge{
-      padding:10px 12px;
-      background: linear-gradient(135deg, var(--glass), var(--glass2));
-      border:1px solid rgba(255,255,255,.12);
-      border-radius:14px;
-      color:var(--muted);
-      font-size:13px;
-      white-space:nowrap;
-      backdrop-filter: blur(6px);
+    h1{
+      margin:0;
+      font-size: clamp(26px, 4vw, 40px);
+      letter-spacing:.2px;
+      font-weight:900;
     }
 
-    .grid{
+    /* ✅ Home grid: 2x2 */
+    .homeGrid{
       display:grid;
-      grid-template-columns: repeat(12, 1fr);
-      gap:14px;
-      margin-top:16px;
+      grid-template-columns: repeat(2, 1fr);
+      gap:16px;
+      margin-top:10px;
     }
-    .card{
-      grid-column: span 6;
-      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:18px;
-      padding:16px;
-      cursor:pointer;
-      transition: transform .12s ease, border-color .12s ease, background .12s ease;
+    @media (max-width: 760px){
+      .homeGrid{ grid-template-columns: 1fr; }
+    }
+
+    .homeCard{
       position:relative;
       overflow:hidden;
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.14);
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      cursor:pointer;
+      transition: transform .12s ease, border-color .12s ease;
       backdrop-filter: blur(6px);
+      min-height: 190px;
     }
-    .card:hover{ transform: translateY(-2px); border-color: rgba(124,92,255,.55); background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.07)); }
-    .card:active{ transform: translateY(0px); }
-    .card .title{ font-weight:700; font-size:16px; margin:0 0 6px; }
-    .card .desc{ margin:0; color:var(--muted); font-size:13.5px; line-height:1.35; }
-    .pill{
-      position:absolute; top:12px; right:12px;
-      font-size:12px;
-      padding:6px 10px;
-      border-radius:999px;
-      background: rgba(124,92,255,.16);
-      border:1px solid rgba(124,92,255,.38);
-      color: #dcd6ff;
-      backdrop-filter: blur(6px);
+    .homeCard:hover{ transform: translateY(-2px); border-color: rgba(124,92,255,.55); }
+    .homeCard:active{ transform: translateY(0px); }
+
+    .homeMedia{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: rgba(0,0,0,.10);
     }
-    @media (max-width: 720px){
-      .card{ grid-column: span 12; }
-      header{ flex-direction:column; align-items:flex-start; }
-      .badge{ width:100%; }
+    .homeMedia img{
+      width: 78%;
+      height: 78%;
+      object-fit: contain;
+      filter: drop-shadow(0 16px 24px rgba(0,0,0,.35));
+      user-select:none;
+      -webkit-user-drag:none;
+      pointer-events:none;
+    }
+
+    .homeOverlay{
+      position:absolute;
+      left:0; right:0; bottom:0;
+      padding:14px 14px 12px;
+      background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.55));
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+    .homeTitle{
+      margin:0;
+      font-weight:900;
+      letter-spacing:.2px;
+      font-size: 18px;
+    }
+    .homeBlurb{
+      margin:0;
+      color: rgba(234,240,255,.88);
+      font-size: 13.5px;
+      line-height: 1.25;
     }
 
     /* Modal */
@@ -121,7 +143,8 @@
       border-bottom:1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.06);
     }
-    .modalTop .mtitle{ font-weight:800; }
+    .modalTop .mtitle{ font-weight:900; letter-spacing:.2px; }
+
     .btn{
       appearance:none;
       border:1px solid rgba(255,255,255,.14);
@@ -131,7 +154,7 @@
       padding:10px 12px;
       cursor:pointer;
       transition: transform .1s ease, background .1s ease, border-color .1s ease;
-      font-weight:700;
+      font-weight:800;
       letter-spacing:.2px;
       backdrop-filter: blur(6px);
     }
@@ -145,6 +168,7 @@
     .btnGood{
       background: linear-gradient(135deg, rgba(67,255,160,.75), rgba(124,92,255,.55));
     }
+
     .modalBody{
       display:grid;
       grid-template-columns: 1.25fr .75fr;
@@ -159,14 +183,14 @@
     .machinePane{
       padding:14px;
       border-right:1px solid rgba(255,255,255,.10);
-      background: none; /* removed */
+      background: none;
     }
     .machine{
       width:100%;
       aspect-ratio: 16/11;
       border-radius:18px;
       border:1px solid rgba(255,255,255,.14);
-      background: none; /* removed */
+      background: none;
       position:relative;
       overflow:hidden;
     }
@@ -174,7 +198,7 @@
       position:absolute; left:0; right:0; top:0;
       padding:10px 12px;
       display:flex; align-items:center; justify-content:space-between;
-      background: rgba(255,255,255,.06); /* no gradient */
+      background: rgba(255,255,255,.06);
       border-bottom:1px solid rgba(255,255,255,.12);
       font-weight:900;
       letter-spacing:.8px;
@@ -191,10 +215,8 @@
       border:1px solid rgba(255,255,255,.14);
       overflow:hidden;
       z-index:1;
-
-      background: none; /* removed */
+      background: none;
     }
-    /* ✅ remove the dark overlay too (it looked like a background) */
     .playfield::after{ content:none; }
 
     .glass{
@@ -306,16 +328,13 @@
       backdrop-filter: blur(6px);
     }
 
-    .sidePane{
-      padding:14px;
-      background: none;
-    }
+    .sidePane{ padding:14px; background:none; }
     .panelBox{
       border-radius:18px;
       border:1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.05);
       padding:14px;
-      min-height: 100%;
+      min-height:100%;
       display:flex;
       flex-direction:column;
       gap:12px;
@@ -348,16 +367,12 @@
 <body>
   <div class="wrap">
     <header>
-      <div>
-        <h1>Open When… 🎄🕹️</h1>
-        <p class="sub">
-          Starts top-left → goes right → down to a remaining prize → grabs → back up → back left → opens → drops.
-        </p>
-      </div>
-      <div class="badge">Tip: edit the messages in PROMPTS</div>
+      <!-- ✅ removed emojis -->
+      <h1>Open When…</h1>
     </header>
 
-    <div class="grid" id="promptGrid"></div>
+    <!-- ✅ 2x2 home grid with gifs -->
+    <div class="homeGrid" id="promptGrid"></div>
   </div>
 
   <div class="modalBackdrop" id="backdrop" aria-hidden="true">
@@ -374,10 +389,8 @@
         <div class="machinePane">
           <div class="machine" id="machine">
             <div class="marquee">
-              <span>Claw Grabber 2000</span>
-              <div class="lights" aria-hidden="true">
-                <span style="opacity:.65;font-size:12px;">READY</span>
-              </div>
+              <span>Claw Grabber</span>
+              <span style="opacity:.65;font-size:12px;">READY</span>
             </div>
 
             <div class="playfield" id="playfield">
@@ -424,6 +437,7 @@
   </div>
 
 <script>
+/** Claw frames */
 const CLAW_SRC = {
   open:  "assets/machine/ZeeClawOpen.png",
   close: "assets/machine/ZeeClawClose.png",
@@ -438,14 +452,51 @@ const START_Y_PX  = 18;
 const HOLD_Y_OFFSET_PX = 56;
 const GRAB_POINT_Y_FRAC = 0.74;
 
-/* ✅ Only spawn in right 75% of playfield */
-const MIN_SPAWN_X_PCT = 25; // x must be >= 25
+/* ✅ Only spawn in right 75% of playfield: x >= 25 */
+const MIN_SPAWN_X_PCT = 25;
 
+/** Home gifs */
+const HOME_GIFS = {
+  happy:   "assets/machine/ZeeMMHappy.gif",
+  stressed:"assets/machine/ZeeMMStress.gif",
+  miss:    "assets/machine/ZeeMMMiss.gif",
+  sad:     "assets/machine/ZeeMMSad.gif",
+};
+
+/**
+ * NOTE: Your message listed "Open when you feel happy" twice.
+ * I assumed the 4th tile should be "Open when you feel sad" (with ZeeMMSad).
+ * If you want a different 4th tile, tell me the title + gif name.
+ */
 const PROMPTS = [
+  {
+    id: "happy",
+    title: "Open when you feel happy",
+    blurb: "...And a shared joy is a double joy",
+    homeGif: HOME_GIFS.happy,
+    prizes: [
+      { img: "assets/prizes/ZeeGift3.png", label: "Celebration", note: "I LOVE seeing you happy.\nTell me what happened so I can celebrate properly!!!" },
+      { img: "assets/prizes/ZeeGift.png", label: "Proud Moment", note: "You deserve this feeling.\nI’m so proud of you." },
+      { img: "assets/prizes/ZeeHeartEnvelope.png", label: "Love Note", note: "I’m smiling like an idiot thinking about you right now.\nKeep shining." },
+    ]
+  },
+  {
+    id: "stressed",
+    title: "Open when you feel stressed",
+    blurb: "Breathe. I’m right here with you.",
+    homeGif: HOME_GIFS.stressed,
+    prizes: [
+      { img: "assets/prizes/ZeeHeartEnvelope.png", label: "Grounding", note: "Inhale 4… hold 4… exhale 6.\nYou’ve got this. I’ve got you." },
+      { img: "assets/prizes/ZeeGift2.png", label: "Reset", note: "Drink water. Unclench your shoulders.\nText me one thing you need right now." },
+      { img: "assets/prizes/ZeeGift.png", label: "Tiny Step", note: "Pick the smallest next step.\nDo it for 5 minutes. That’s a win." },
+      { img: "assets/prizes/ZeeMessageInBottle.png", label: "Calm", note: "You don’t have to carry everything alone.\nI’m here." },
+    ]
+  },
   {
     id: "miss",
     title: "Open when you miss me",
     blurb: "A few reminders I’m with you, even far away.",
+    homeGif: HOME_GIFS.miss,
     prizes: [
       { img: "assets/prizes/ZeeHeartEnvelope.png", label: "Love Letter", note: "I miss you too.\nClose your eyes for 5 seconds and imagine I’m hugging you.\nWe’ll be together soon." },
       { img: "assets/prizes/ZeeMessageInBottle.png", label: "Message in a Bottle", note: "Distance is annoying, but it doesn’t change what we are.\nI’m proud of you. I love you." },
@@ -457,7 +508,8 @@ const PROMPTS = [
   {
     id: "sad",
     title: "Open when you feel sad",
-    blurb: "Comfort, no fixing—just love.",
+    blurb: "A shared burden is half a burden...",
+    homeGif: HOME_GIFS.sad,
     prizes: [
       { img: "assets/prizes/ZeeHeartEnvelope.png", label: "Soft Note", note: "You don’t have to be strong right now.\nI’m here.\nEven quietly, I’m here." },
       { img: "assets/prizes/ZeeGift2.png", label: "Warmth", note: "Breathe out slowly.\nUnclench your jaw.\nYou’re safe. You’re loved." },
@@ -465,18 +517,9 @@ const PROMPTS = [
       { img: "assets/prizes/ZeeGift.png", label: "Tiny Win", note: "Pick one small thing and do it for 5 minutes.\nThat counts. I’m proud of you." },
     ]
   },
-  {
-    id: "happy",
-    title: "Open when you feel happy",
-    blurb: "I want to celebrate you too.",
-    prizes: [
-      { img: "assets/prizes/ZeeGift3.png", label: "Celebration", note: "I LOVE seeing you happy.\nTell me what happened so I can celebrate properly!!!" },
-      { img: "assets/prizes/ZeeGift.png", label: "Proud Moment", note: "You deserve this feeling.\nI’m so proud of you." },
-      { img: "assets/prizes/ZeeHeartEnvelope.png", label: "Love Note", note: "I’m smiling like an idiot thinking about you right now.\nKeep shining." },
-    ]
-  },
 ];
 
+/** DOM */
 const grid = document.getElementById("promptGrid");
 const backdrop = document.getElementById("backdrop");
 const modalTitle = document.getElementById("modalTitle");
@@ -494,24 +537,31 @@ const cable = document.getElementById("cable");
 const clawBox = document.getElementById("clawBox");
 const claw = document.getElementById("claw");
 
+/** State */
 let currentPrompt = null;
 let prizeElByIndex = new Map();
 let remainingIndices = [];
 let isBusy = false;
 
-function makeCard(p){
+/** Home cards (no bubbles) */
+function makeHomeCard(p){
   const el = document.createElement("div");
-  el.className = "card";
+  el.className = "homeCard";
   el.innerHTML = `
-    <div class="pill">${p.prizes.length} prizes</div>
-    <p class="title">${p.title}</p>
-    <p class="desc">${p.blurb}</p>
+    <div class="homeMedia">
+      <img src="${p.homeGif}" alt="${p.title}" />
+    </div>
+    <div class="homeOverlay">
+      <p class="homeTitle">${p.title}</p>
+      <p class="homeBlurb">${p.blurb}</p>
+    </div>
   `;
   el.addEventListener("click", () => openPrompt(p.id));
   return el;
 }
-PROMPTS.forEach(p => grid.appendChild(makeCard(p)));
+PROMPTS.forEach(p => grid.appendChild(makeHomeCard(p)));
 
+/** Modal control */
 function openModal(){
   backdrop.style.display = "flex";
   backdrop.setAttribute("aria-hidden", "false");
@@ -529,6 +579,7 @@ function closeModal(){
 closeBtn.addEventListener("click", closeModal);
 backdrop.addEventListener("click", (e) => { if(e.target === backdrop) closeModal(); });
 
+/** Helpers */
 function setClawStage(stage){ claw.src = CLAW_SRC[stage]; }
 function setStatus(text){ statusPill.textContent = text; }
 
@@ -554,6 +605,7 @@ function clearPrizes(){
   remainingIndices = [];
 }
 
+/** Positioning & tween */
 function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
 function getPlayfieldRect(){ return playfield.getBoundingClientRect(); }
 
@@ -596,6 +648,7 @@ function positionHeldPrize(prizeEl){
   prizeEl.style.top  = `${((c.y + HOLD_Y_OFFSET_PX) / pf.height) * 100}%`;
 }
 
+/** Prompt open */
 function openPrompt(id){
   currentPrompt = PROMPTS.find(p => p.id === id);
   if(!currentPrompt) return;
@@ -618,6 +671,7 @@ function spawnPrizes(prompt){
     {x: 28, y: 70}, {x: 40, y: 78}, {x: 52, y: 88},
     {x: 62, y: 72}, {x: 74, y: 80}, {x: 84, y: 86},
     {x: 70, y: 86}, {x: 46, y: 84}, {x: 58, y: 80},
+    {x: 88, y: 74}, {x: 80, y: 72},
   ].filter(s => s.x >= MIN_SPAWN_X_PCT);
 
   const shuffled = [...spots].sort(() => Math.random() - 0.5);
@@ -643,6 +697,7 @@ function spawnPrizes(prompt){
   setClawY(START_Y_PX);
 }
 
+/** Pick only an available prize */
 function pickAvailableIndex(){
   if(!remainingIndices.length) return null;
   return remainingIndices[Math.floor(Math.random() * remainingIndices.length)];
@@ -652,6 +707,7 @@ function removeAvailableIndex(idx){
   if(k >= 0) remainingIndices.splice(k, 1);
 }
 
+/** Main pull: RIGHT → DOWN → GRAB → UP → LEFT → OPEN → DROP */
 async function doPull(){
   if(isBusy || !currentPrompt) return;
 
@@ -688,6 +744,7 @@ async function doPull(){
   let targetClawTopPx = clamp(targetCenterY - grabPointOffsetPx, 10, pf.height - CLAW_BOX_SIZE + 8);
 
   setClawStage("open");
+
   setStatus("Moving right…");
   await tween({ from: START_X_PCT, to: targetXPercent, ms: 650, onUpdate: v => setClawX(v) });
 
