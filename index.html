@@ -8,12 +8,8 @@
   <style>
     :root{
       --bg:#0b1020;
-      --panel:#111a33;
       --text:#eaf0ff;
       --muted:#b9c4ff;
-      --accent:#7c5cff;
-      --accent2:#ff4fd8;
-      --good:#43ffa0;
       --glass: rgba(255,255,255,.08);
       --glass2: rgba(255,255,255,.12);
     }
@@ -39,17 +35,8 @@
       gap:16px;
       margin-bottom:18px;
     }
-    h1{
-      margin:0;
-      font-size: clamp(24px, 4vw, 38px);
-      letter-spacing:.2px;
-    }
-    .sub{
-      margin:6px 0 0;
-      color:var(--muted);
-      max-width:60ch;
-      line-height:1.4;
-    }
+    h1{margin:0;font-size: clamp(24px, 4vw, 38px);letter-spacing:.2px;}
+    .sub{margin:6px 0 0;color:var(--muted);max-width:60ch;line-height:1.4;}
     .badge{
       padding:10px 12px;
       background: linear-gradient(135deg, var(--glass), var(--glass2));
@@ -59,6 +46,7 @@
       font-size:13px;
       white-space:nowrap;
     }
+
     .grid{
       display:grid;
       grid-template-columns: repeat(12, 1fr);
@@ -166,8 +154,7 @@
       aspect-ratio: 16/11;
       border-radius:18px;
       border:1px solid rgba(255,255,255,.14);
-      background:
-        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
       position:relative;
       overflow:hidden;
     }
@@ -210,11 +197,10 @@
       background-position: center;
       background-repeat:no-repeat;
     }
-    /* subtle dark overlay so prizes pop */
     .playfield::after{
       content:"";
       position:absolute; inset:0;
-      background: linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.35));
+      background: linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.33));
       pointer-events:none;
       z-index:1;
     }
@@ -222,7 +208,8 @@
     /* prizes */
     .prize{
       position:absolute;
-      width:84px; height:84px;
+      width: var(--prizeSize, 88px);
+      height: var(--prizeSize, 88px);
       border-radius:18px;
       display:flex;
       align-items:center;
@@ -231,21 +218,20 @@
       border:1px solid rgba(255,255,255,.16);
       box-shadow: 0 10px 22px rgba(0,0,0,.25);
       user-select:none;
-      z-index:2; /* above playfield overlay */
+      z-index:2;
       transform: translate(-50%, -50%) rotate(var(--rot, 0deg));
       transition: transform .18s ease, opacity .18s ease, filter .18s ease;
     }
     .prize img{
-      width:68px;
-      height:68px;
-      object-fit:contain;
+      width: 92%;
+      height: 92%;
+      object-fit: contain;
       pointer-events:none;
       user-drag:none;
       -webkit-user-drag:none;
     }
     .prize.grabbed{
       filter: drop-shadow(0 0 14px rgba(255,255,255,.55));
-      transform: translate(-50%, -50%) scale(0.95) rotate(var(--rot, 0deg));
     }
 
     /* claw rig */
@@ -253,9 +239,9 @@
       position:absolute;
       left:0; right:0;
       top:-6px;
-      height:170px;
+      height:190px;
       pointer-events:none;
-      z-index:4; /* above prizes */
+      z-index:4;
     }
     .rail{
       position:absolute; left:0; right:0; top:6px;
@@ -273,18 +259,27 @@
       left:50%;
       transform: translateX(-50%);
     }
-    .claw{
+
+    /* Fixed claw viewport to prevent frame "jump" */
+    .clawBox{
       position:absolute;
       top:92px;
       left:50%;
       transform: translateX(-50%);
-      width:120px; /* will be auto-fit per prize */
-      height:auto;
+      width: 160px;   /* this matches our prize sizing math */
+      height: 160px;  /* fixed viewport height */
+      pointer-events:none;
       filter: drop-shadow(0 10px 10px rgba(0,0,0,.25));
-      image-rendering: auto;
+    }
+    .clawImg{
+      width:100%;
+      height:100%;
+      object-fit: contain;
+      object-position: center;
+      display:block;
     }
 
-    /* optional: faux glass overlay using CSS only */
+    /* glass overlay via CSS */
     .glass{
       position:absolute; inset:0;
       background:
@@ -316,7 +311,7 @@
       white-space:nowrap;
     }
 
-    /* Right panel (message reveal) */
+    /* Right panel */
     .sidePane{
       padding:14px;
       background:
@@ -334,11 +329,7 @@
       flex-direction:column;
       gap:12px;
     }
-    .revealTitle{
-      font-weight:900;
-      letter-spacing:.3px;
-      margin:0;
-    }
+    .revealTitle{ font-weight:900; letter-spacing:.3px; margin:0; }
     .revealCard{
       border-radius:16px;
       border:1px dashed rgba(255,255,255,.18);
@@ -350,20 +341,9 @@
       justify-content:center;
       gap:10px;
     }
-    .revealCard .big{
-      font-size:14px;
-      color: var(--muted);
-      line-height:1.5;
-    }
-    .revealCard .msg{
-      font-size:14.5px;
-      line-height:1.6;
-      white-space:pre-wrap;
-    }
-    .tiny{
-      font-size:12px;
-      color: rgba(234,240,255,.75);
-    }
+    .revealCard .big{ font-size:14px; color: var(--muted); line-height:1.5; }
+    .revealCard .msg{ font-size:14.5px; line-height:1.6; white-space:pre-wrap; }
+    .tiny{ font-size:12px; color: rgba(234,240,255,.75); }
     .pulse{ animation: pulse .9s ease-in-out infinite; }
     @keyframes pulse{
       0%,100%{ transform:scale(1); opacity:.95; }
@@ -380,7 +360,7 @@
         <h1>Open When… 🎄🕹️</h1>
         <p class="sub">
           Choose a prompt, then win a note from the claw machine.
-          Gifts use a 3-stage grab (Claw1→Claw2→Claw3). Envelope/bottle use 2-stage (Claw1→Claw2).
+          The claw drops only to the selected prize (not the bottom), grabs it, carries it, then drops it.
         </p>
       </div>
       <div class="badge">Tip: edit the messages in PROMPTS</div>
@@ -414,10 +394,12 @@
               <div class="clawRig" id="clawRig">
                 <div class="rail"></div>
                 <div class="cable" id="cable"></div>
-                <img class="claw" id="claw" src="assets/machine/ZeeClaw1.png" alt="claw" />
+
+                <div class="clawBox" id="clawBox">
+                  <img class="clawImg" id="claw" src="assets/machine/ZeeClawOpen.png" alt="claw" />
+                </div>
               </div>
 
-              <!-- CSS glass highlight (no file needed) -->
               <div class="glass"></div>
             </div>
 
@@ -454,31 +436,45 @@
   </div>
 
 <script>
-/**
- * FILE PATHS (must match your repo)
- */
+/** Backgrounds */
 const BG_ARCADE = "assets/backgrounds/ZeeArcadeBackground.jpeg";
 const BG_MISS   = "assets/backgrounds/ZeeMissBackground.jpg";
 
+/** Claw frames (2 PNGs) */
 const CLAW_SRC = {
-  1: "assets/machine/ZeeClaw1.png",
-  2: "assets/machine/ZeeClaw2.png",
-  3: "assets/machine/ZeeClaw3.png",
+  open:  "assets/machine/ZeeClawOpen.png",
+  close: "assets/machine/ZeeClawClose.png",
 };
 
 /**
- * How tightly the prongs "touch" the prize edges.
- * If it looks too wide/narrow, tweak these a bit.
+ * Prize sizing + alignment to closed claw
+ * We treat the clawBox as a fixed viewport (CLAW_BOX_SIZE).
+ * Then we size prizes so that, when the claw closes, the prong inner edges align with prize edges.
+ *
+ * Tune PRIZE_TO_CLAW_GRIP if needed:
+ * - If prize is too big (prongs overlap prize): decrease it slightly (e.g., 0.56)
+ * - If prize is too small (gap between prongs and prize): increase it (e.g., 0.62)
  */
-const CLAW_EDGE_FIT = {
-  gift:     { stage1: 1.85, stage2: 1.60, stage3: 1.40 }, // 3-stage clamp
-  envelope: { stage1: 1.70, stage2: 1.50 },               // 2-stage clamp
-  bottle:   { stage1: 1.75, stage2: 1.52 },               // 2-stage clamp
-};
+const CLAW_BOX_SIZE = 160;          // must match .clawBox width/height in CSS
+const PRIZE_TO_CLAW_GRIP = 0.59;    // main alignment knob
+const PRIZE_SIZE = Math.round(CLAW_BOX_SIZE * PRIZE_TO_CLAW_GRIP);
 
 /**
- * PROMPTS: edit notes here
+ * Drop depth: where the claw should stop relative to the prize
+ * The "grab point" is measured as a fraction down the clawBox (0 = top, 1 = bottom).
+ * Tune if needed:
+ * - If claw stops too high above prize: increase (e.g., 0.78)
+ * - If claw overlaps too far past prize: decrease (e.g., 0.70)
  */
+const GRAB_POINT_Y_FRAC = 0.74;
+
+/**
+ * Where the prize sits while being carried under the claw (px)
+ * Increase if it should hang lower.
+ */
+const HOLD_Y_OFFSET_PX = 56;
+
+/** PROMPTS */
 const PROMPTS = [
   {
     id: "miss",
@@ -486,11 +482,11 @@ const PROMPTS = [
     blurb: "A few reminders I’m with you, even far away.",
     background: BG_MISS,
     prizes: [
-      { type: "envelope", img: "assets/prizes/ZeeHeartEnvelope.png", label: "Love Letter", note: "I miss you too.\nClose your eyes for 5 seconds and imagine I’m hugging you.\nWe’ll be together soon." },
-      { type: "bottle", img: "assets/prizes/ZeeMessageInBottle.png", label: "Message in a Bottle", note: "Distance is annoying, but it doesn’t change what we are.\nI’m proud of you. I love you." },
-      { type: "gift", img: "assets/prizes/ZeeGift.png", label: "Little Surprise", note: "Tiny reminder: you’re my favorite person.\nAlways." },
-      { type: "gift", img: "assets/prizes/ZeeGift2.png", label: "Cozy Gift", note: "Go drink water and do one small self-care thing.\nThen text me one thing you want me to say to you." },
-      { type: "gift", img: "assets/prizes/ZeeGift3.png", label: "Big Hug", note: "If I were there, I’d pull you into the biggest hug.\nSo here it is, delivered digitally: *hug*." },
+      { img: "assets/prizes/ZeeHeartEnvelope.png", label: "Love Letter", note: "I miss you too.\nClose your eyes for 5 seconds and imagine I’m hugging you.\nWe’ll be together soon." },
+      { img: "assets/prizes/ZeeMessageInBottle.png", label: "Message in a Bottle", note: "Distance is annoying, but it doesn’t change what we are.\nI’m proud of you. I love you." },
+      { img: "assets/prizes/ZeeGift.png", label: "Little Surprise", note: "Tiny reminder: you’re my favorite person.\nAlways." },
+      { img: "assets/prizes/ZeeGift2.png", label: "Cozy Gift", note: "Go drink water and do one small self-care thing.\nThen text me one thing you want me to say to you." },
+      { img: "assets/prizes/ZeeGift3.png", label: "Big Hug", note: "If I were there, I’d pull you into the biggest hug.\nSo here it is, delivered digitally: *hug*." },
     ]
   },
   {
@@ -499,10 +495,10 @@ const PROMPTS = [
     blurb: "Comfort, no fixing—just love.",
     background: BG_ARCADE,
     prizes: [
-      { type: "envelope", img: "assets/prizes/ZeeHeartEnvelope.png", label: "Soft Note", note: "You don’t have to be strong right now.\nI’m here.\nEven quietly, I’m here." },
-      { type: "gift", img: "assets/prizes/ZeeGift2.png", label: "Warmth", note: "Breathe out slowly.\nUnclench your jaw.\nYou’re safe. You’re loved." },
-      { type: "bottle", img: "assets/prizes/ZeeMessageInBottle.png", label: "Comfort Bottle", note: "Bad days aren’t forever.\nI love you through the messy parts too." },
-      { type: "gift", img: "assets/prizes/ZeeGift.png", label: "Tiny Win", note: "Pick one small thing and do it for 5 minutes.\nThat counts. I’m proud of you." },
+      { img: "assets/prizes/ZeeHeartEnvelope.png", label: "Soft Note", note: "You don’t have to be strong right now.\nI’m here.\nEven quietly, I’m here." },
+      { img: "assets/prizes/ZeeGift2.png", label: "Warmth", note: "Breathe out slowly.\nUnclench your jaw.\nYou’re safe. You’re loved." },
+      { img: "assets/prizes/ZeeMessageInBottle.png", label: "Comfort Bottle", note: "Bad days aren’t forever.\nI love you through the messy parts too." },
+      { img: "assets/prizes/ZeeGift.png", label: "Tiny Win", note: "Pick one small thing and do it for 5 minutes.\nThat counts. I’m proud of you." },
     ]
   },
   {
@@ -511,9 +507,9 @@ const PROMPTS = [
     blurb: "I want to celebrate you too.",
     background: BG_ARCADE,
     prizes: [
-      { type: "gift", img: "assets/prizes/ZeeGift3.png", label: "Celebration", note: "I LOVE seeing you happy.\nTell me what happened so I can celebrate properly!!!" },
-      { type: "gift", img: "assets/prizes/ZeeGift.png", label: "Proud Moment", note: "You deserve this feeling.\nI’m so proud of you." },
-      { type: "envelope", img: "assets/prizes/ZeeHeartEnvelope.png", label: "Love Note", note: "I’m smiling like an idiot thinking about you right now.\nKeep shining." },
+      { img: "assets/prizes/ZeeGift3.png", label: "Celebration", note: "I LOVE seeing you happy.\nTell me what happened so I can celebrate properly!!!" },
+      { img: "assets/prizes/ZeeGift.png", label: "Proud Moment", note: "You deserve this feeling.\nI’m so proud of you." },
+      { img: "assets/prizes/ZeeHeartEnvelope.png", label: "Love Note", note: "I’m smiling like an idiot thinking about you right now.\nKeep shining." },
     ]
   },
 ];
@@ -533,13 +529,17 @@ const revealMsg = document.getElementById("revealMsg");
 const revealTiny = document.getElementById("revealTiny");
 const anotherBtn = document.getElementById("anotherBtn");
 
-const clawRig = document.getElementById("clawRig");
 const cable = document.getElementById("cable");
+const clawBox = document.getElementById("clawBox");
 const claw = document.getElementById("claw");
 
 let currentPrompt = null;
 let prizesDom = [];
 let isBusy = false;
+
+function setClawStage(stage){
+  claw.src = CLAW_SRC[stage];
+}
 
 function makeCard(p){
   const el = document.createElement("div");
@@ -611,6 +611,7 @@ function spawnPrizes(prompt){
     el.style.left = `${spot.x}%`;
     el.style.top  = `${spot.y}%`;
     el.style.setProperty("--rot", `${(Math.random()*18-9).toFixed(1)}deg`);
+    el.style.setProperty("--prizeSize", `${PRIZE_SIZE}px`);
     el.dataset.index = String(i);
     el.innerHTML = `<img src="${pr.img}" alt="${pr.label}" draggable="false" />`;
     playfield.appendChild(el);
@@ -619,18 +620,19 @@ function spawnPrizes(prompt){
 
   setClawX(50);
   setClawY(92);
-  setClawStage(1);
+  setClawStage("open");
 }
 
 function setClawX(percent){
-  claw.style.left = `${percent}%`;
+  clawBox.style.left = `${percent}%`;
   cable.style.left = `${percent}%`;
 }
 function setClawY(px){
-  claw.style.top = `${px}px`;
-  const cableHeight = Math.max(46, Math.min(160, px - 10));
+  clawBox.style.top = `${px}px`;
+  const cableHeight = Math.max(46, Math.min(220, px - 10));
   cable.style.height = `${cableHeight}px`;
 }
+
 function setStatus(text){
   statusPill.textContent = text;
 }
@@ -667,16 +669,30 @@ function showReveal(prize, promptTitle){
   anotherBtn.classList.remove("hidden");
 }
 
-function setClawStage(n){
-  claw.src = CLAW_SRC[n];
+function getPlayfieldRect(){
+  return playfield.getBoundingClientRect();
 }
 
-function fitClawToPrize(prizeEl, prizeType, stageKey){
-  const rect = prizeEl.getBoundingClientRect();
-  const fit = (CLAW_EDGE_FIT[prizeType] && CLAW_EDGE_FIT[prizeType][stageKey]) ? CLAW_EDGE_FIT[prizeType][stageKey] : 1.6;
-  const desiredWidthPx = rect.width * fit;
-  claw.style.width = `${desiredWidthPx}px`;
+function getClawCenterInPlayfield(){
+  const pf = getPlayfieldRect();
+  const cr = clawBox.getBoundingClientRect();
+  return {
+    x: (cr.left + cr.width/2) - pf.left,
+    y: (cr.top + cr.height/2) - pf.top
+  };
 }
+
+function positionHeldPrize(prizeEl){
+  const pf = getPlayfieldRect();
+  const c = getClawCenterInPlayfield();
+  const xPct = (c.x / pf.width) * 100;
+  const yPct = ((c.y + HOLD_Y_OFFSET_PX) / pf.height) * 100;
+
+  prizeEl.style.left = `${xPct}%`;
+  prizeEl.style.top = `${yPct}%`;
+}
+
+function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
 
 async function doPull(){
   if(isBusy || !currentPrompt) return;
@@ -692,101 +708,88 @@ async function doPull(){
 
   const targetEl = prizesDom.find(el => Number(el.dataset.index) === pickedIndex) || prizesDom[0];
 
-  const pfRect = playfield.getBoundingClientRect();
+  const pf = getPlayfieldRect();
   const tRect = targetEl.getBoundingClientRect();
-  const targetCenterX = (tRect.left + tRect.width/2) - pfRect.left;
-  const targetXPercent = (targetCenterX / pfRect.width) * 100;
 
-  // move to target
-  setClawStage(1);
+  // target X percent (centered over prize)
+  const targetCenterX = (tRect.left + tRect.width/2) - pf.left;
+  const targetXPercent = (targetCenterX / pf.width) * 100;
+
+  // target Y in pixels: stop where the prize is (not bottom)
+  // We aim the claw's "grab point" (a point inside clawBox) to the prize center Y.
+  const targetCenterY = (tRect.top + tRect.height/2) - pf.top;
+  const grabPointOffsetPx = CLAW_BOX_SIZE * GRAB_POINT_Y_FRAC;     // how far down within clawBox
+  let targetClawTopPx = targetCenterY - grabPointOffsetPx;
+
+  // clamp so claw doesn't go out of playfield bounds
+  const minTop = 18;                                               // don't overlap marquee too much
+  const maxTop = pf.height - CLAW_BOX_SIZE + 8;                    // keep box inside playfield
+  targetClawTopPx = clamp(targetClawTopPx, minTop, maxTop);
+
+  // Move horizontally to target
+  setClawStage("open");
   setStatus("Aiming…");
   await tween({
-    from: parseFloat(claw.style.left || "50"),
+    from: parseFloat(clawBox.style.left || "50"),
     to: targetXPercent,
     ms: 650,
     onUpdate: v => setClawX(v)
   });
 
-  // drop
+  // Drop only to the prize
   setStatus("Grabbing…");
   await tween({
-    from: 92,
-    to: 175,
+    from: parseFloat(clawBox.style.top || "92"),
+    to: targetClawTopPx,
     ms: 520,
     onUpdate: v => setClawY(v)
   });
 
-  // grab sequence based on prize type
-  const type = pickedPrize.type; // gift/envelope/bottle
-
-  setClawStage(1);
-  fitClawToPrize(targetEl, type, "stage1");
-  await new Promise(r => setTimeout(r, 120));
-
-  setClawStage(2);
-  fitClawToPrize(targetEl, type, "stage2");
-  await new Promise(r => setTimeout(r, 140));
-
-  if(type === "gift"){
-    setClawStage(3);
-    fitClawToPrize(targetEl, type, "stage3");
-    await new Promise(r => setTimeout(r, 140));
-  }
-
+  // Close claw and "pick up" the REAL prize element (no disappearing/teleport)
+  setClawStage("close");
   targetEl.classList.add("grabbed");
-  await new Promise(r => setTimeout(r, 120));
+  targetEl.style.setProperty("--rot", "0deg");
+  targetEl.style.zIndex = "6";
+  targetEl.style.transition = "none";
+  positionHeldPrize(targetEl);
 
-  // attach image that moves with claw
-  const attach = document.createElement("img");
-  attach.src = pickedPrize.img;
-  attach.alt = pickedPrize.label;
-  attach.style.position = "absolute";
-  attach.style.left = "50%";
-  attach.style.top = "190px";
-  attach.style.transform = "translate(-50%, -50%)";
-  attach.style.width = "68px";
-  attach.style.height = "68px";
-  attach.style.objectFit = "contain";
-  attach.style.filter = "drop-shadow(0 8px 12px rgba(0,0,0,0.35))";
-  attach.style.zIndex = "4";
-  playfield.appendChild(attach);
+  await new Promise(r => setTimeout(r, 130));
 
-  targetEl.style.opacity = "0";
-  targetEl.style.pointerEvents = "none";
-
-  // lift
+  // Lift while carrying
   setStatus("Lifting…");
   await tween({
-    from: 175,
+    from: targetClawTopPx,
     to: 92,
     ms: 520,
     onUpdate: v => {
       setClawY(v);
-      attach.style.top = `${v + 100}px`;
+      positionHeldPrize(targetEl);
     }
   });
 
-  // deliver to left
+  // Deliver left while carrying
   setStatus("Delivering…");
   await tween({
     from: targetXPercent,
     to: 16,
     ms: 520,
-    onUpdate: v => setClawX(v)
+    onUpdate: v => {
+      setClawX(v);
+      positionHeldPrize(targetEl);
+    }
   });
 
-  // release: back to stage1
-  setClawStage(1);
-
+  // Release and drop the SAME element into the chute
+  setClawStage("open");
   setStatus("✅ Won!");
   hintText.textContent = "Prize delivered. Note revealed on the right.";
 
-  // drop the attach out (visual chute)
-  attach.style.transition = "transform .35s ease, opacity .35s ease";
-  attach.style.transform = "translate(-180px, 210px) scale(.85) rotate(-18deg)";
-  attach.style.opacity = "0";
+  targetEl.style.transition = "transform .35s ease, opacity .35s ease";
+  targetEl.style.transform = "translate(-180px, 210px) scale(.85) rotate(-18deg)";
+  targetEl.style.opacity = "0";
+
   await new Promise(r => setTimeout(r, 380));
-  attach.remove();
+  targetEl.remove();
 
   showReveal(pickedPrize, currentPrompt.title);
 
@@ -815,4 +818,3 @@ document.addEventListener("keydown", (e) => {
 </script>
 </body>
 </html>
-
