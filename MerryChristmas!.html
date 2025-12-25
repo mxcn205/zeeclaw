@@ -102,20 +102,18 @@
       letter-spacing:.2px;
       font-size: 20px;
       text-shadow:
-        0 2px 6px rgba(0,0,0,.70),
-        0 0 14px rgba(255,255,255,.22);
-
+        0 3px 8px rgba(0,0,0,.8),
+        0 0 18px rgba(255,255,255,.35);
     }
     .homeBlurb{
       margin:0;
-      font-weight:500;
       color: rgba(234,240,255,.88);
       font-size: 14px;
       line-height: 1.25;
+      font-weight: 500;
       text-shadow:
-        0 2px 6px rgba(0,0,0,.65),
-        0 0 12px rgba(255,255,255,.18);
-
+        0 3px 8px rgba(0,0,0,.75),
+        0 0 16px rgba(255,255,255,.30);
     }
 
     .modalBackdrop{
@@ -172,24 +170,19 @@
     }
 
     .modalBody{
-      display:grid;
-      grid-template-columns: 1.25fr .75fr;
-      gap:0;
-      min-height: 540px;
-    }
-    @media (max-width: 900px){
-      .modalBody{ grid-template-columns: 1fr; }
+      display:block;
+      min-height: 600px;
     }
 
     .machinePane{
       padding:14px;
-      border-right:1px solid var(--pink-border-2);
+      border-right:none;
       background: transparent;
     }
 
     .machine{
       width:100%;
-      aspect-ratio: 16/11;
+      min-height: 600px;
       border-radius:18px;
       border:1px solid var(--pink-border);
       background: rgba(255,255,255,.35);
@@ -347,41 +340,58 @@
       text-align:center;
     }
 
-    .sidePane{ padding:14px; background: transparent; }
-    .panelBox{
-      border-radius:18px;
-      border:1px solid var(--pink-border);
-      background: var(--pink-3);
-      padding:14px;
-      min-height:100%;
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-    }
-    .revealTitle{ font-weight:900; letter-spacing:.3px; margin:0; }
-    .revealCard{
-      border-radius:16px;
-      border:1px dashed rgba(80,20,40,.25);
-      padding:12px;
-      background: rgba(255,255,255,.55);
-      flex:1;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      gap:10px;
-    }
-    .revealCard .big{ font-size:14px; color: var(--pink-text-muted); line-height:1.5; }
-    .revealCard .msg{
-      font-size:15.5px;
-      line-height:1.65;
-      white-space:pre-wrap;
-    }
-
     .hidden{ display:none !important; }
     .pulse{ animation: pulse .9s ease-in-out infinite; }
     @keyframes pulse{
       0%,100%{ transform:scale(1); opacity:.95; }
       50%{ transform:scale(1.02); opacity:1; }
+    }
+
+    .msgBackdrop{
+      position:absolute;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background: rgba(0,0,0,.25);
+      z-index: 80;
+    }
+    .msgCard{
+      width:min(560px, 92%);
+      border-radius:18px;
+      border:1px solid var(--pink-border);
+      background: var(--pink-3);
+      box-shadow: 0 18px 50px rgba(0,0,0,.25);
+      padding:14px;
+      transform: scale(.96);
+      opacity: 0;
+    }
+    .msgCardTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding-bottom:10px;
+      border-bottom:1px solid var(--pink-border-2);
+    }
+    .msgTitle{
+      margin:0;
+      font-weight:900;
+      letter-spacing:.3px;
+      color: var(--pink-text);
+    }
+    .msgBody{
+      margin-top:12px;
+      font-size:16.5px;
+      line-height:1.65;
+      white-space:pre-wrap;
+      color: var(--pink-text);
+    }
+    .msgBackdrop.show{ display:flex; }
+    .msgBackdrop.show .msgCard{ animation: popIn .22s ease-out forwards; }
+    @keyframes popIn{
+      0%   { transform: scale(.92) translateY(6px); opacity: 0; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
     }
   </style>
 </head>
@@ -427,20 +437,21 @@
                 <button class="btn btnPrimary" id="dropBtn" type="button">DROP CLAW</button>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div class="sidePane">
-          <div class="panelBox">
-            <h3 class="revealTitle">Your message...</h3>
-
-            <div class="revealCard">
-              <div class="big pulse" id="revealPlaceholder">Win something to reveal a note…</div>
-              <div class="msg hidden" id="revealMsg"></div>
+            <div class="msgBackdrop" id="msgBackdrop" aria-hidden="true">
+              <div class="msgCard" role="dialog" aria-modal="true" aria-label="Your message">
+                <div class="msgCardTop">
+                  <h3 class="msgTitle">Your message...</h3>
+                  <button class="btn" id="msgCloseBtn" type="button">Close</button>
+                </div>
+                <div class="msgBody" id="msgBody"></div>
+              </div>
             </div>
+
           </div>
         </div>
       </div>
+
     </div>
   </div>
 
@@ -528,11 +539,12 @@ const resetBtn = document.getElementById("resetBtn");
 const closeBtn = document.getElementById("closeBtn");
 const statusPill = document.getElementById("statusPill");
 const hintText = document.getElementById("hintText");
-const revealPlaceholder = document.getElementById("revealPlaceholder");
-const revealMsg = document.getElementById("revealMsg");
 const cable = document.getElementById("cable");
 const clawBox = document.getElementById("clawBox");
 const claw = document.getElementById("claw");
+const msgBackdrop = document.getElementById("msgBackdrop");
+const msgCloseBtn = document.getElementById("msgCloseBtn");
+const msgBody = document.getElementById("msgBody");
 
 let currentPrompt = null;
 let prizeElByIndex = new Map();
@@ -567,17 +579,31 @@ function openModal(){
   backdrop.setAttribute("aria-hidden", "false");
   document.body.style.overflow = "hidden";
 }
+function closeMessageModal(){
+  msgBackdrop.classList.remove("show");
+  msgBackdrop.setAttribute("aria-hidden", "true");
+  msgBody.textContent = "";
+}
 function closeModal(){
   backdrop.style.display = "none";
   backdrop.setAttribute("aria-hidden", "true");
   document.body.style.overflow = "";
   currentPrompt = null;
-  clearReveal();
+  closeMessageModal();
   clearPrizes();
   setStatus("ready");
+  hintText.textContent = "Press DROP CLAW to grab a prize.";
 }
 closeBtn.addEventListener("click", closeModal);
 backdrop.addEventListener("click", (e) => { if(e.target === backdrop) closeModal(); });
+
+function openMessageModal(text){
+  msgBody.textContent = text;
+  msgBackdrop.classList.add("show");
+  msgBackdrop.setAttribute("aria-hidden", "false");
+}
+msgCloseBtn.addEventListener("click", closeMessageModal);
+msgBackdrop.addEventListener("click", (e) => { if(e.target === msgBackdrop) closeMessageModal(); });
 
 function setClawStage(stage){ claw.src = CLAW_SRC[stage]; }
 
@@ -585,17 +611,6 @@ function setStatus(mode){
   if(mode === "grabbing") statusPill.textContent = "Grabbing message...";
   else if(mode === "done") statusPill.textContent = "Message ready!";
   else statusPill.textContent = "Ready";
-}
-
-function clearReveal(){
-  revealPlaceholder.classList.remove("hidden");
-  revealMsg.classList.add("hidden");
-  revealMsg.textContent = "";
-}
-function showReveal(prize){
-  revealPlaceholder.classList.add("hidden");
-  revealMsg.classList.remove("hidden");
-  revealMsg.textContent = prize.note;
 }
 
 function clearPrizes(){
@@ -652,7 +667,7 @@ function openPrompt(id){
 
   modalTitle.textContent = currentPrompt.title;
   openModal();
-  clearReveal();
+  closeMessageModal();
   spawnPrizes(currentPrompt);
 
   setStatus("ready");
@@ -737,7 +752,7 @@ async function doPull(){
   targetXPercent = Math.max(targetXPercent, SPAWN_MIN_X_PCT + 2);
 
   const targetCenterY = (tRect.top + tRect.height/2) - pf.top;
-  const grabPointOffsetPx = CLAW_BOX_SIZE * GRAB_POINT_Y_FRAC;
+  const grabPointOffsetPx = CLAW_BOX_SIZE * 0.74;
   let targetClawTopPx = clamp(targetCenterY - grabPointOffsetPx, 10, pf.height - CLAW_BOX_SIZE + 8);
 
   setClawStage("open");
@@ -777,7 +792,7 @@ async function doPull(){
 
   setStatus("done");
   hintText.textContent = "Press DROP CLAW to grab a prize.";
-  showReveal(pickedPrize);
+  openMessageModal(pickedPrize.note);
 
   setTimeout(() => { if(!isBusy) setStatus("ready"); }, 900);
 
@@ -789,14 +804,17 @@ dropBtn.addEventListener("click", doPull);
 
 resetBtn.addEventListener("click", () => {
   if(!currentPrompt || isBusy) return;
-  clearReveal();
+  closeMessageModal();
   spawnPrizes(currentPrompt);
   setStatus("ready");
   hintText.textContent = "Press DROP CLAW to grab a prize.";
 });
 
 document.addEventListener("keydown", (e) => {
-  if(e.key === "Escape" && backdrop.style.display === "flex") closeModal();
+  if(e.key === "Escape" && backdrop.style.display === "flex"){
+    if(msgBackdrop.classList.contains("show")) closeMessageModal();
+    else closeModal();
+  }
 });
 </script>
 </body>
