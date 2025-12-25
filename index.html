@@ -194,56 +194,35 @@
       top:12px;
       bottom:70px;
       border-radius:14px;
+      /* IMPORTANT: keep border visible above the drop image */
       border:1px solid var(--pink-border);
       overflow:hidden;
       z-index:1;
       background: rgba(255,255,255,.20);
     }
 
-    /* ✅ Drop-zone "wall + hole" (matches your reference) */
-    .dropZone{
-      position:absolute;
-      left:14px;
-      bottom:14px;
-      width:132px;
-      height:210px;
-      z-index:5;
-      pointer-events:none;
-    }
-    /* tall light grey parallelogram on the RIGHT EDGE */
-    .dropZone .wall{
-      position:absolute;
-      right: 0;
-      top: 26px;
-      width: 36px;
-      height: 150px;
-      background: rgba(150,150,150,.26);      /* 20–30% opacity */
-      transform: skewY(-16deg);               /* parallelogram */
-      border-radius: 6px;
-      box-shadow: 0 10px 18px rgba(0,0,0,.05);
-    }
-    /* "line near the bottom of the wall" */
-    .dropZone .floorLine{
+    /* ✅ ZeeClawDrop image in lower-left corner */
+    .dropImg{
       position:absolute;
       left: 0;
-      right: 0;
-      bottom: 40px;                           /* near bottom of wall */
-      height: 2px;
-      background: rgba(110,110,110,.26);      /* 20–30% opacity */
-      transform: skewX(-10deg);
-      transform-origin: left center;
-      border-radius: 2px;
-    }
-    /* darker grey fill between the line and bottom frame */
-    .dropZone .holeFill{
-      position:absolute;
-      left: 0;
-      right: 0;
       bottom: 0;
-      height: 40px;                           /* equals floorLine bottom offset */
-      background: rgba(95,95,95,.28);         /* 20–30% opacity, darker */
-      border-radius: 8px;
-      box-shadow: inset 0 8px 14px rgba(0,0,0,.08);
+      width: 180px;        /* tweak if you want bigger/smaller */
+      height: auto;
+      opacity: 1;
+      pointer-events:none;
+      z-index: 2;          /* below outline layer */
+      -webkit-user-drag:none;
+      user-select:none;
+    }
+
+    /* ✅ A top “outline layer” to ensure playfield border is above ZeeClawDrop */
+    .playfieldOutline{
+      position:absolute;
+      inset:0;
+      border-radius:14px;
+      border:1px solid var(--pink-border);
+      pointer-events:none;
+      z-index: 20;         /* above drop image */
     }
 
     .glass{
@@ -253,7 +232,7 @@
         linear-gradient(250deg, rgba(255,255,255,.25), rgba(255,255,255,0) 40%);
       opacity: .35;
       pointer-events:none;
-      z-index:6;
+      z-index: 25;
       mix-blend-mode: screen;
     }
 
@@ -265,7 +244,7 @@
       align-items:center;
       justify-content:center;
       user-select:none;
-      z-index:2;
+      z-index: 5;
       transform: translate(-50%, -50%) rotate(var(--rot, 0deg));
       transition: transform .18s ease, opacity .18s ease, filter .18s ease;
       background: transparent;
@@ -292,7 +271,7 @@
       top:-6px;
       height:190px;
       pointer-events:none;
-      z-index:4;
+      z-index: 10;
     }
     .rail{
       position:absolute; left:0; right:0; top:6px;
@@ -336,7 +315,7 @@
       border:1px solid var(--pink-border);
       border-radius:14px;
       padding:10px;
-      z-index:7;
+      z-index: 30;
     }
     .hint{ color: var(--pink-text-muted); font-size:12.5px; line-height:1.2; }
     .status{
@@ -409,12 +388,8 @@
         <div class="machinePane">
           <div class="machine" id="machine">
             <div class="playfield" id="playfield">
-              <!-- ✅ updated drop-zone -->
-              <div class="dropZone" aria-hidden="true">
-                <div class="wall"></div>
-                <div class="floorLine"></div>
-                <div class="holeFill"></div>
-              </div>
+              <!-- ✅ NEW: drop image in bottom-left -->
+              <img class="dropImg" src="assets/machine/ZeeClawDrop.png" alt="" aria-hidden="true" />
 
               <div class="clawRig">
                 <div class="rail"></div>
@@ -423,6 +398,10 @@
                   <img class="clawImg" id="claw" src="assets/machine/ZeeClawOpen.png" alt="claw" />
                 </div>
               </div>
+
+              <!-- ✅ outline ABOVE the drop image -->
+              <div class="playfieldOutline" aria-hidden="true"></div>
+
               <div class="glass"></div>
             </div>
 
@@ -754,7 +733,7 @@ async function doPull(){
   setClawStage("close");
   targetEl.classList.add("grabbed");
   targetEl.style.setProperty("--rot", "0deg");
-  targetEl.style.zIndex = "6";
+  targetEl.style.zIndex = "15";
   targetEl.style.transition = "none";
   positionHeldPrize(targetEl);
   await new Promise(r => setTimeout(r, 140));
