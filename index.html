@@ -169,10 +169,6 @@
     .btnPrimary:hover{
       background: linear-gradient(135deg, rgba(255,111,167,1), rgba(183,123,255,.85));
     }
-    .btnGood{
-      background: linear-gradient(135deg, rgba(255,206,225,1), rgba(255,111,167,.85));
-      color: var(--pink-text);
-    }
 
     .modalBody{
       display:grid;
@@ -200,13 +196,12 @@
       overflow:hidden;
     }
 
-    /* ✅ removed top marquee entirely */
     .marquee{ display:none; }
 
     .playfield{
       position:absolute;
       left:12px; right:12px;
-      top:12px;            /* ✅ pull playfield up since marquee is gone */
+      top:12px;
       bottom:70px;
       border-radius:14px;
       border:1px solid var(--pink-border);
@@ -316,7 +311,7 @@
       border-radius:999px;
       background: rgba(255,255,255,.55);
       white-space:nowrap;
-      min-width: 120px;
+      min-width: 140px;
       text-align:center;
     }
 
@@ -345,13 +340,12 @@
     }
     .revealCard .big{ font-size:14px; color: var(--pink-text-muted); line-height:1.5; }
     .revealCard .msg{ font-size:14.5px; line-height:1.6; white-space:pre-wrap; }
-    .tiny{ font-size:12px; color: rgba(58,18,34,.65); }
+    .hidden{ display:none !important; }
     .pulse{ animation: pulse .9s ease-in-out infinite; }
     @keyframes pulse{
       0%,100%{ transform:scale(1); opacity:.95; }
       50%{ transform:scale(1.02); opacity:1; }
     }
-    .hidden{ display:none !important; }
   </style>
 </head>
 
@@ -396,20 +390,15 @@
 
         <div class="sidePane">
           <div class="panelBox">
-            <!-- ✅ title change -->
             <h3 class="revealTitle">Your message...</h3>
 
             <div class="revealCard">
               <div class="big pulse" id="revealPlaceholder">Win something to reveal a note…</div>
               <div class="msg hidden" id="revealMsg"></div>
-              <div class="tiny hidden" id="revealTiny"></div>
+              <!-- ✅ removed "Pulled from..." line entirely -->
             </div>
 
-            <button class="btn btnGood hidden" id="anotherBtn" type="button">
-              Pull again (same prompt)
-            </button>
-
-            <!-- ✅ removed the "(When all prizes ...)" line -->
+            <!-- ✅ removed "Pull again (same prompt)" button entirely -->
           </div>
         </div>
       </div>
@@ -417,7 +406,6 @@
   </div>
 
 <script>
-/** Claw frames */
 const CLAW_SRC = {
   open:  "assets/machine/ZeeClawOpen.png",
   close: "assets/machine/ZeeClawClose.png",
@@ -431,11 +419,8 @@ const START_X_PCT = 10;
 const START_Y_PX  = 18;
 const HOLD_Y_OFFSET_PX = 56;
 const GRAB_POINT_Y_FRAC = 0.74;
-
-/* Only spawn in right 75% of playfield */
 const MIN_SPAWN_X_PCT = 25;
 
-/* Home gifs: assets/buttons/... */
 const HOME_GIFS = {
   happy:   "assets/buttons/ZeeMMHappy.gif",
   stressed:"assets/buttons/ZeeMMStress.gif",
@@ -506,8 +491,6 @@ const statusPill = document.getElementById("statusPill");
 const hintText = document.getElementById("hintText");
 const revealPlaceholder = document.getElementById("revealPlaceholder");
 const revealMsg = document.getElementById("revealMsg");
-const revealTiny = document.getElementById("revealTiny");
-const anotherBtn = document.getElementById("anotherBtn");
 const cable = document.getElementById("cable");
 const clawBox = document.getElementById("clawBox");
 const claw = document.getElementById("claw");
@@ -549,37 +532,29 @@ function closeModal(){
   currentPrompt = null;
   clearReveal();
   clearPrizes();
-  setStatus("Ready");
+  setStatus("ready");
 }
 closeBtn.addEventListener("click", closeModal);
 backdrop.addEventListener("click", (e) => { if(e.target === backdrop) closeModal(); });
 
-/** Helpers */
 function setClawStage(stage){ claw.src = CLAW_SRC[stage]; }
 
-/* ✅ Unified status behavior requested */
+/** Status pill behavior */
 function setStatus(mode){
-  // mode: "ready" | "grabbing" | "done" | "empty"
   if(mode === "grabbing") statusPill.textContent = "Grabbing message...";
   else if(mode === "done") statusPill.textContent = "Message ready!";
-  else if(mode === "empty") statusPill.textContent = "Ready";
   else statusPill.textContent = "Ready";
 }
 
 function clearReveal(){
   revealPlaceholder.classList.remove("hidden");
   revealMsg.classList.add("hidden");
-  revealTiny.classList.add("hidden");
   revealMsg.textContent = "";
-  revealTiny.textContent = "";
 }
-function showReveal(prize, promptTitle){
+function showReveal(prize){
   revealPlaceholder.classList.add("hidden");
   revealMsg.classList.remove("hidden");
-  revealTiny.classList.remove("hidden");
-  revealMsg.textContent = prize.note;
-  revealTiny.textContent = `Pulled from: ${promptTitle} • Prize: ${prize.label}`;
-  anotherBtn.classList.remove("hidden");
+  revealMsg.textContent = prize.note;  // ✅ no "Pulled from..." anywhere
 }
 
 function clearPrizes(){
@@ -630,7 +605,6 @@ function positionHeldPrize(prizeEl){
   prizeEl.style.top  = `${((c.y + HOLD_Y_OFFSET_PX) / pf.height) * 100}%`;
 }
 
-/** Prompt open */
 function openPrompt(id){
   currentPrompt = PROMPTS.find(p => p.id === id);
   if(!currentPrompt) return;
@@ -642,10 +616,8 @@ function openPrompt(id){
 
   setStatus("ready");
   hintText.textContent = "Press DROP CLAW to grab a prize.";
-  anotherBtn.classList.add("hidden");
 }
 
-/** spawn only on right 75% */
 function spawnPrizes(prompt){
   clearPrizes();
 
@@ -688,12 +660,10 @@ function removeAvailableIndex(idx){
   if(k >= 0) remainingIndices.splice(k, 1);
 }
 
-/** Main pull */
 async function doPull(){
   if(isBusy || !currentPrompt) return;
 
   if(!remainingIndices.length){
-    // keep pill showing Ready (as you requested)
     setStatus("ready");
     hintText.textContent = "No prizes left — press Reset prizes.";
     return;
@@ -701,9 +671,7 @@ async function doPull(){
 
   isBusy = true;
   dropBtn.disabled = true;
-  anotherBtn.disabled = true;
 
-  // ✅ when in motion
   setStatus("grabbing");
 
   const pickedIndex = pickAvailableIndex();
@@ -714,7 +682,6 @@ async function doPull(){
     removeAvailableIndex(pickedIndex);
     isBusy = false;
     dropBtn.disabled = false;
-    anotherBtn.disabled = false;
     setStatus("ready");
     return doPull();
   }
@@ -764,23 +731,17 @@ async function doPull(){
   prizeElByIndex.delete(pickedIndex);
   removeAvailableIndex(pickedIndex);
 
-  // ✅ when dropped
   setStatus("done");
-  hintText.textContent = "Prize dropped. Note revealed on the right.";
-  showReveal(pickedPrize, currentPrompt.title);
+  hintText.textContent = "Prize dropped!";  // ✅ updated text
+  showReveal(pickedPrize);
 
-  // after a brief moment, go back to Ready like before
-  setTimeout(() => {
-    if(!isBusy) setStatus("ready");
-  }, 900);
+  setTimeout(() => { if(!isBusy) setStatus("ready"); }, 900);
 
   dropBtn.disabled = false;
-  anotherBtn.disabled = false;
   isBusy = false;
 }
 
 dropBtn.addEventListener("click", doPull);
-anotherBtn.addEventListener("click", () => { clearReveal(); doPull(); });
 
 resetBtn.addEventListener("click", () => {
   if(!currentPrompt || isBusy) return;
