@@ -208,8 +208,8 @@
     /* prizes */
     .prize{
       position:absolute;
-      width: var(--prizeSize, 88px);
-      height: var(--prizeSize, 88px);
+      width: var(--prizeSize, 92px);
+      height: var(--prizeSize, 92px);
       border-radius:18px;
       display:flex;
       align-items:center;
@@ -260,14 +260,14 @@
       transform: translateX(-50%);
     }
 
-    /* Fixed claw viewport to prevent frame "jump" */
+    /* fixed claw viewport */
     .clawBox{
       position:absolute;
-      top:92px;
-      left:50%;
+      top:18px;
+      left:10%;
       transform: translateX(-50%);
-      width: 160px;   /* this matches our prize sizing math */
-      height: 160px;  /* fixed viewport height */
+      width: 160px;
+      height: 160px;
       pointer-events:none;
       filter: drop-shadow(0 10px 10px rgba(0,0,0,.25));
     }
@@ -359,8 +359,7 @@
       <div>
         <h1>Open When… 🎄🕹️</h1>
         <p class="sub">
-          Choose a prompt, then win a note from the claw machine.
-          The claw drops only to the selected prize (not the bottom), grabs it, carries it, then drops it.
+          Starts top-left → goes right → down to a remaining prize → grabs → back up → back left → opens → drops.
         </p>
       </div>
       <div class="badge">Tip: edit the messages in PROMPTS</div>
@@ -391,7 +390,7 @@
             </div>
 
             <div class="playfield" id="playfield">
-              <div class="clawRig" id="clawRig">
+              <div class="clawRig">
                 <div class="rail"></div>
                 <div class="cable" id="cable"></div>
 
@@ -404,7 +403,7 @@
             </div>
 
             <div class="controls">
-              <div class="hint" id="hintText">Press DROP CLAW to grab a random prize.</div>
+              <div class="hint" id="hintText">Press DROP CLAW to grab a prize.</div>
               <div style="display:flex; gap:10px; align-items:center;">
                 <span class="status" id="statusPill">Ready</span>
                 <button class="btn btnPrimary" id="dropBtn" type="button">DROP CLAW</button>
@@ -416,7 +415,7 @@
         <div class="sidePane">
           <div class="panelBox">
             <h3 class="revealTitle">Your prize ✨</h3>
-            <div class="revealCard" id="revealCard">
+            <div class="revealCard">
               <div class="big pulse" id="revealPlaceholder">Win something to reveal a note…</div>
               <div class="msg hidden" id="revealMsg"></div>
               <div class="tiny hidden" id="revealTiny"></div>
@@ -427,7 +426,7 @@
             </button>
 
             <div class="tiny" style="opacity:.85;">
-              You can add “one pull per day” later with localStorage if you want.
+              (When all prizes are taken, reset or pick another prompt.)
             </div>
           </div>
         </div>
@@ -440,39 +439,27 @@
 const BG_ARCADE = "assets/backgrounds/ZeeArcadeBackground.jpeg";
 const BG_MISS   = "assets/backgrounds/ZeeMissBackground.jpg";
 
-/** Claw frames (2 PNGs) */
+/** Claw frames */
 const CLAW_SRC = {
   open:  "assets/machine/ZeeClawOpen.png",
   close: "assets/machine/ZeeClawClose.png",
 };
 
 /**
- * Prize sizing + alignment to closed claw
- * We treat the clawBox as a fixed viewport (CLAW_BOX_SIZE).
- * Then we size prizes so that, when the claw closes, the prong inner edges align with prize edges.
- *
- * Tune PRIZE_TO_CLAW_GRIP if needed:
- * - If prize is too big (prongs overlap prize): decrease it slightly (e.g., 0.56)
- * - If prize is too small (gap between prongs and prize): increase it (e.g., 0.62)
+ * Sizing: match prize edges to closed-claw inner edges by forcing a single prize size.
+ * If you want tighter/looser grip, tweak PRIZE_TO_CLAW_GRIP slightly.
  */
-const CLAW_BOX_SIZE = 160;          // must match .clawBox width/height in CSS
-const PRIZE_TO_CLAW_GRIP = 0.59;    // main alignment knob
+const CLAW_BOX_SIZE = 160;        // matches .clawBox
+const PRIZE_TO_CLAW_GRIP = 0.59;  // main knob
 const PRIZE_SIZE = Math.round(CLAW_BOX_SIZE * PRIZE_TO_CLAW_GRIP);
 
-/**
- * Drop depth: where the claw should stop relative to the prize
- * The "grab point" is measured as a fraction down the clawBox (0 = top, 1 = bottom).
- * Tune if needed:
- * - If claw stops too high above prize: increase (e.g., 0.78)
- * - If claw overlaps too far past prize: decrease (e.g., 0.70)
- */
-const GRAB_POINT_Y_FRAC = 0.74;
+/** Movement */
+const START_X_PCT = 10; // top-left X
+const START_Y_PX  = 18; // top-left Y
+const HOLD_Y_OFFSET_PX = 56; // prize hangs under claw center while carried
 
-/**
- * Where the prize sits while being carried under the claw (px)
- * Increase if it should hang lower.
- */
-const HOLD_Y_OFFSET_PX = 56;
+// Grab point inside clawBox (fraction down from top)
+const GRAB_POINT_Y_FRAC = 0.74;
 
 /** PROMPTS */
 const PROMPTS = [
@@ -514,6 +501,7 @@ const PROMPTS = [
   },
 ];
 
+/** DOM */
 const grid = document.getElementById("promptGrid");
 const backdrop = document.getElementById("backdrop");
 const modalTitle = document.getElementById("modalTitle");
@@ -523,24 +511,22 @@ const resetBtn = document.getElementById("resetBtn");
 const closeBtn = document.getElementById("closeBtn");
 const statusPill = document.getElementById("statusPill");
 const hintText = document.getElementById("hintText");
-
 const revealPlaceholder = document.getElementById("revealPlaceholder");
 const revealMsg = document.getElementById("revealMsg");
 const revealTiny = document.getElementById("revealTiny");
 const anotherBtn = document.getElementById("anotherBtn");
-
 const cable = document.getElementById("cable");
 const clawBox = document.getElementById("clawBox");
 const claw = document.getElementById("claw");
 
+/** State */
 let currentPrompt = null;
-let prizesDom = [];
+let prizesDom = [];                 // list of prize elements
+let prizeElByIndex = new Map();     // index -> element
+let remainingIndices = [];          // indices still available to pick
 let isBusy = false;
 
-function setClawStage(stage){
-  claw.src = CLAW_SRC[stage];
-}
-
+/** UI build */
 function makeCard(p){
   const el = document.createElement("div");
   el.className = "card";
@@ -554,6 +540,7 @@ function makeCard(p){
 }
 PROMPTS.forEach(p => grid.appendChild(makeCard(p)));
 
+/** Modal control */
 function openModal(){
   backdrop.style.display = "flex";
   backdrop.setAttribute("aria-hidden", "false");
@@ -573,84 +560,14 @@ backdrop.addEventListener("click", (e) => {
   if(e.target === backdrop) closeModal();
 });
 
+/** Helpers */
+function setClawStage(stage){ claw.src = CLAW_SRC[stage]; }
+
 function setPlayfieldBackground(path){
   playfield.style.backgroundImage = `url("${path}")`;
 }
 
-function openPrompt(id){
-  currentPrompt = PROMPTS.find(p => p.id === id);
-  if(!currentPrompt) return;
-
-  modalTitle.textContent = currentPrompt.title;
-  openModal();
-  clearReveal();
-  setPlayfieldBackground(currentPrompt.background);
-  spawnPrizes(currentPrompt);
-  setStatus("Ready");
-  hintText.textContent = "Press DROP CLAW to grab a random prize.";
-  anotherBtn.classList.add("hidden");
-}
-
-function clearPrizes(){
-  prizesDom.forEach(d => d.remove());
-  prizesDom = [];
-}
-
-function spawnPrizes(prompt){
-  clearPrizes();
-
-  const spots = [
-    {x: 18, y: 72}, {x: 40, y: 78}, {x: 62, y: 72}, {x: 78, y: 80}, {x: 52, y: 88}
-  ];
-  const shuffled = [...spots].sort(() => Math.random() - 0.5);
-
-  prompt.prizes.forEach((pr, i) => {
-    const spot = shuffled[i % shuffled.length];
-    const el = document.createElement("div");
-    el.className = "prize";
-    el.style.left = `${spot.x}%`;
-    el.style.top  = `${spot.y}%`;
-    el.style.setProperty("--rot", `${(Math.random()*18-9).toFixed(1)}deg`);
-    el.style.setProperty("--prizeSize", `${PRIZE_SIZE}px`);
-    el.dataset.index = String(i);
-    el.innerHTML = `<img src="${pr.img}" alt="${pr.label}" draggable="false" />`;
-    playfield.appendChild(el);
-    prizesDom.push(el);
-  });
-
-  setClawX(50);
-  setClawY(92);
-  setClawStage("open");
-}
-
-function setClawX(percent){
-  clawBox.style.left = `${percent}%`;
-  cable.style.left = `${percent}%`;
-}
-function setClawY(px){
-  clawBox.style.top = `${px}px`;
-  const cableHeight = Math.max(46, Math.min(220, px - 10));
-  cable.style.height = `${cableHeight}px`;
-}
-
-function setStatus(text){
-  statusPill.textContent = text;
-}
-
-function tween({from, to, ms, onUpdate}){
-  return new Promise(resolve => {
-    const start = performance.now();
-    function frame(t){
-      const p = Math.min(1, (t - start) / ms);
-      const eased = p < 0.5 ? 2*p*p : 1 - Math.pow(-2*p+2,2)/2;
-      const v = from + (to - from)*eased;
-      onUpdate(v);
-      if(p < 1) requestAnimationFrame(frame);
-      else resolve();
-    }
-    requestAnimationFrame(frame);
-  });
-}
+function setStatus(text){ statusPill.textContent = text; }
 
 function clearReveal(){
   revealPlaceholder.classList.remove("hidden");
@@ -669,8 +586,44 @@ function showReveal(prize, promptTitle){
   anotherBtn.classList.remove("hidden");
 }
 
-function getPlayfieldRect(){
-  return playfield.getBoundingClientRect();
+function clearPrizes(){
+  prizesDom.forEach(d => d.remove());
+  prizesDom = [];
+  prizeElByIndex.clear();
+  remainingIndices = [];
+}
+
+/** Positioning & tween */
+function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+
+function getPlayfieldRect(){ return playfield.getBoundingClientRect(); }
+
+function setClawX(percent){
+  const x = clamp(percent, 6, 94);
+  clawBox.style.left = `${x}%`;
+  cable.style.left = `${x}%`;
+}
+function setClawY(px){
+  const pf = getPlayfieldRect();
+  const y = clamp(px, 10, pf.height - CLAW_BOX_SIZE + 8);
+  clawBox.style.top = `${y}px`;
+  const cableHeight = Math.max(40, Math.min(260, y - 6));
+  cable.style.height = `${cableHeight}px`;
+}
+
+function tween({from, to, ms, onUpdate}){
+  return new Promise(resolve => {
+    const start = performance.now();
+    function frame(t){
+      const p = Math.min(1, (t - start) / ms);
+      const eased = p < 0.5 ? 2*p*p : 1 - Math.pow(-2*p+2,2)/2;
+      const v = from + (to - from)*eased;
+      onUpdate(v);
+      if(p < 1) requestAnimationFrame(frame);
+      else resolve();
+    }
+    requestAnimationFrame(frame);
+  });
 }
 
 function getClawCenterInPlayfield(){
@@ -687,79 +640,174 @@ function positionHeldPrize(prizeEl){
   const c = getClawCenterInPlayfield();
   const xPct = (c.x / pf.width) * 100;
   const yPct = ((c.y + HOLD_Y_OFFSET_PX) / pf.height) * 100;
-
   prizeEl.style.left = `${xPct}%`;
-  prizeEl.style.top = `${yPct}%`;
+  prizeEl.style.top  = `${yPct}%`;
 }
 
-function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+/** Prompt open */
+function openPrompt(id){
+  currentPrompt = PROMPTS.find(p => p.id === id);
+  if(!currentPrompt) return;
 
+  modalTitle.textContent = currentPrompt.title;
+  openModal();
+  clearReveal();
+  setPlayfieldBackground(currentPrompt.background);
+  spawnPrizes(currentPrompt);
+
+  setStatus("Ready");
+  hintText.textContent = "Press DROP CLAW to grab a prize.";
+  anotherBtn.classList.add("hidden");
+}
+
+function spawnPrizes(prompt){
+  clearPrizes();
+
+  // layout spots (bottom-ish, cozy pile)
+  const spots = [
+    {x: 18, y: 72}, {x: 40, y: 78}, {x: 62, y: 72}, {x: 78, y: 80}, {x: 52, y: 88}
+  ];
+  const shuffled = [...spots].sort(() => Math.random() - 0.5);
+
+  prompt.prizes.forEach((pr, i) => {
+    const spot = shuffled[i % shuffled.length];
+    const el = document.createElement("div");
+    el.className = "prize";
+    el.style.left = `${spot.x}%`;
+    el.style.top  = `${spot.y}%`;
+    el.style.setProperty("--rot", `${(Math.random()*18-9).toFixed(1)}deg`);
+    el.style.setProperty("--prizeSize", `${PRIZE_SIZE}px`);
+    el.dataset.index = String(i);
+    el.innerHTML = `<img src="${pr.img}" alt="${pr.label}" draggable="false" />`;
+    playfield.appendChild(el);
+
+    prizesDom.push(el);
+    prizeElByIndex.set(i, el);
+    remainingIndices.push(i);
+  });
+
+  // start claw at top-left
+  setClawStage("open");
+  setClawX(START_X_PCT);
+  setClawY(START_Y_PX);
+}
+
+/** Pick only an available prize */
+function pickAvailableIndex(){
+  if(!remainingIndices.length) return null;
+  const j = Math.floor(Math.random() * remainingIndices.length);
+  return remainingIndices[j];
+}
+function removeAvailableIndex(idx){
+  const k = remainingIndices.indexOf(idx);
+  if(k >= 0) remainingIndices.splice(k, 1);
+}
+
+/** Main pull */
 async function doPull(){
   if(isBusy || !currentPrompt) return;
+
+  // no prizes left
+  if(!remainingIndices.length){
+    setStatus("Empty");
+    hintText.textContent = "No prizes left — press Reset prizes.";
+    return;
+  }
+
   isBusy = true;
   dropBtn.disabled = true;
   anotherBtn.disabled = true;
 
-  setStatus("Dropping…");
-  hintText.textContent = "Claw is choosing…";
+  setStatus("Choosing…");
+  hintText.textContent = "Finding an available prize…";
 
-  const pickedIndex = Math.floor(Math.random() * currentPrompt.prizes.length);
+  const pickedIndex = pickAvailableIndex();
+  if(pickedIndex === null){
+    setStatus("Empty");
+    hintText.textContent = "No prizes left — press Reset prizes.";
+    isBusy = false;
+    dropBtn.disabled = false;
+    anotherBtn.disabled = false;
+    return;
+  }
+
   const pickedPrize = currentPrompt.prizes[pickedIndex];
+  const targetEl = prizeElByIndex.get(pickedIndex);
 
-  const targetEl = prizesDom.find(el => Number(el.dataset.index) === pickedIndex) || prizesDom[0];
+  // If somehow missing, remove from pool and retry once
+  if(!targetEl){
+    removeAvailableIndex(pickedIndex);
+    isBusy = false;
+    dropBtn.disabled = false;
+    anotherBtn.disabled = false;
+    return doPull();
+  }
 
   const pf = getPlayfieldRect();
   const tRect = targetEl.getBoundingClientRect();
 
-  // target X percent (centered over prize)
+  // target X percent (center over prize)
   const targetCenterX = (tRect.left + tRect.width/2) - pf.left;
   const targetXPercent = (targetCenterX / pf.width) * 100;
 
-  // target Y in pixels: stop where the prize is (not bottom)
-  // We aim the claw's "grab point" (a point inside clawBox) to the prize center Y.
+  // target Y px: clawBox top so its grab point meets prize center
   const targetCenterY = (tRect.top + tRect.height/2) - pf.top;
-  const grabPointOffsetPx = CLAW_BOX_SIZE * GRAB_POINT_Y_FRAC;     // how far down within clawBox
+  const grabPointOffsetPx = CLAW_BOX_SIZE * GRAB_POINT_Y_FRAC;
   let targetClawTopPx = targetCenterY - grabPointOffsetPx;
+  targetClawTopPx = clamp(targetClawTopPx, 10, pf.height - CLAW_BOX_SIZE + 8);
 
-  // clamp so claw doesn't go out of playfield bounds
-  const minTop = 18;                                               // don't overlap marquee too much
-  const maxTop = pf.height - CLAW_BOX_SIZE + 8;                    // keep box inside playfield
-  targetClawTopPx = clamp(targetClawTopPx, minTop, maxTop);
-
-  // Move horizontally to target
+  // 1) Ensure start position (top-left), open
   setClawStage("open");
-  setStatus("Aiming…");
+  setStatus("Start…");
   await tween({
-    from: parseFloat(clawBox.style.left || "50"),
+    from: parseFloat(clawBox.style.left || String(START_X_PCT)),
+    to: START_X_PCT,
+    ms: 220,
+    onUpdate: v => setClawX(v)
+  });
+  await tween({
+    from: parseFloat(clawBox.style.top || String(START_Y_PX)),
+    to: START_Y_PX,
+    ms: 220,
+    onUpdate: v => setClawY(v)
+  });
+
+  // 2) Move RIGHT to target X (while staying up)
+  setStatus("Moving right…");
+  hintText.textContent = "Moving into position…";
+  await tween({
+    from: START_X_PCT,
     to: targetXPercent,
     ms: 650,
     onUpdate: v => setClawX(v)
   });
 
-  // Drop only to the prize
-  setStatus("Grabbing…");
+  // 3) Move DOWN to target Y
+  setStatus("Dropping…");
   await tween({
-    from: parseFloat(clawBox.style.top || "92"),
+    from: START_Y_PX,
     to: targetClawTopPx,
     ms: 520,
     onUpdate: v => setClawY(v)
   });
 
-  // Close claw and "pick up" the REAL prize element (no disappearing/teleport)
+  // 4) Close + grab (carry the REAL element)
+  setStatus("Grabbing…");
   setClawStage("close");
+
   targetEl.classList.add("grabbed");
   targetEl.style.setProperty("--rot", "0deg");
   targetEl.style.zIndex = "6";
   targetEl.style.transition = "none";
   positionHeldPrize(targetEl);
 
-  await new Promise(r => setTimeout(r, 130));
+  await new Promise(r => setTimeout(r, 140));
 
-  // Lift while carrying
+  // 5) Move UP back to start Y (still at target X)
   setStatus("Lifting…");
   await tween({
     from: targetClawTopPx,
-    to: 92,
+    to: START_Y_PX,
     ms: 520,
     onUpdate: v => {
       setClawY(v);
@@ -767,30 +815,37 @@ async function doPull(){
     }
   });
 
-  // Deliver left while carrying
-  setStatus("Delivering…");
+  // 6) Move LEFT back to start X
+  setStatus("Returning…");
   await tween({
     from: targetXPercent,
-    to: 16,
-    ms: 520,
+    to: START_X_PCT,
+    ms: 650,
     onUpdate: v => {
       setClawX(v);
       positionHeldPrize(targetEl);
     }
   });
 
-  // Release and drop the SAME element into the chute
+  // 7) Open + drop the gift at the start position
+  setStatus("Dropping prize…");
   setClawStage("open");
-  setStatus("✅ Won!");
-  hintText.textContent = "Prize delivered. Note revealed on the right.";
+  hintText.textContent = "Prize dropped. Note revealed on the right.";
 
+  // Drop animation for the SAME element
   targetEl.style.transition = "transform .35s ease, opacity .35s ease";
-  targetEl.style.transform = "translate(-180px, 210px) scale(.85) rotate(-18deg)";
+  targetEl.style.transform = "translate(-10px, 260px) scale(.92) rotate(-10deg)";
   targetEl.style.opacity = "0";
 
   await new Promise(r => setTimeout(r, 380));
-  targetEl.remove();
 
+  // Remove from DOM + availability pool
+  targetEl.remove();
+  prizeElByIndex.delete(pickedIndex);
+  removeAvailableIndex(pickedIndex);
+
+  // Reveal note
+  setStatus("✅ Won!");
   showReveal(pickedPrize, currentPrompt.title);
 
   dropBtn.disabled = false;
@@ -799,6 +854,7 @@ async function doPull(){
 }
 
 dropBtn.addEventListener("click", doPull);
+
 anotherBtn.addEventListener("click", () => {
   clearReveal();
   doPull();
