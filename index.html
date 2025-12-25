@@ -21,7 +21,7 @@
 
     body{
       margin:0;
-      font-family: "Century Gothic", "URW Gothic L", "Tw Cen MT", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      font-family: Didot, "Didot LT STD", "Hoefler Text", "Baskerville", "Times New Roman", serif;
       color:var(--text);
       min-height:100vh;
       display:flex;
@@ -147,6 +147,7 @@
       transition: transform .1s ease, background .1s ease, border-color .1s ease;
       font-weight:800;
       letter-spacing:.2px;
+      font-family: inherit;
     }
     .btn:hover{ background: rgba(255,255,255,.75); border-color: rgba(80,20,40,.25); transform: translateY(-1px); }
     .btn:active{ transform: translateY(0px); }
@@ -207,7 +208,7 @@
       height: auto;
       max-height: 100%;
       pointer-events:none;
-      z-index: 2; /* below outline */
+      z-index: 2;
       -webkit-user-drag:none;
       user-select:none;
     }
@@ -219,6 +220,17 @@
       border:1px solid var(--pink-border);
       pointer-events:none;
       z-index: 20;
+    }
+
+    .playfieldOutlineFront{
+      position:absolute;
+      inset:0;
+      border-radius:14px;
+      border:2px solid rgba(80,20,40,.22);
+      pointer-events:none;
+      z-index: 60;
+      background: transparent;
+      box-shadow: 0 0 0 1px rgba(255,255,255,.18) inset;
     }
 
     .glass{
@@ -396,6 +408,7 @@
 
               <div class="playfieldOutline" aria-hidden="true"></div>
               <div class="glass"></div>
+              <div class="playfieldOutlineFront" aria-hidden="true"></div>
             </div>
 
             <div class="controls">
@@ -497,7 +510,6 @@ const PROMPTS = [
   },
 ];
 
-/** DOM */
 const grid = document.getElementById("promptGrid");
 const backdrop = document.getElementById("backdrop");
 const modalTitle = document.getElementById("modalTitle");
@@ -513,13 +525,11 @@ const cable = document.getElementById("cable");
 const clawBox = document.getElementById("clawBox");
 const claw = document.getElementById("claw");
 
-/** State */
 let currentPrompt = null;
 let prizeElByIndex = new Map();
 let remainingIndices = [];
 let isBusy = false;
 
-/** Home order */
 const HOME_ORDER_IDS = ["sad", "happy", "miss", "stressed"];
 
 function makeHomeCard(p){
