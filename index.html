@@ -7,26 +7,24 @@
 
   <style>
     :root{
-      /* Home page (keep as-is) */
+      /* Home page */
       --text:#eaf0ff;
       --muted:#b9c4ff;
 
-      /* ✅ Popup color scheme (pink) */
+      /* Popup (pink scheme) */
       --pink:#FFE6EE;
-      --pink-2:#FFD6E3;  /* slightly darker for header */
-      --pink-3:#FFF1F6;  /* lighter panels */
+      --pink-2:#FFD6E3;
+      --pink-3:#FFF1F6;
       --pink-border: rgba(80,20,40,.18);
       --pink-border-2: rgba(80,20,40,.12);
       --pink-text:#3a1222;
       --pink-text-muted: rgba(58,18,34,.72);
 
-      /* Accent for buttons */
       --accent:#FF6FA7;
       --accent-2:#B77BFF;
     }
     *{box-sizing:border-box}
 
-    /* ✅ Add Century Gothic (best-effort) */
     body{
       margin:0;
       font-family: "Century Gothic", "URW Gothic L", "Tw Cen MT", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
@@ -119,9 +117,7 @@
       line-height: 1.25;
     }
 
-    /* =========================
-       ✅ Popup (pink scheme)
-       ========================= */
+    /* Popup */
     .modalBackdrop{
       position:fixed; inset:0;
       background: rgba(0,0,0,.55);
@@ -204,23 +200,14 @@
       overflow:hidden;
     }
 
-    .marquee{
-      position:absolute; left:0; right:0; top:0;
-      padding:10px 12px;
-      display:flex; align-items:center; justify-content:space-between;
-      background: rgba(255,255,255,.55);
-      border-bottom:1px solid var(--pink-border);
-      font-weight:900;
-      letter-spacing:.8px;
-      text-transform:uppercase;
-      font-size:12px;
-      z-index:5;
-    }
+    /* ✅ removed top marquee entirely */
+    .marquee{ display:none; }
 
     .playfield{
       position:absolute;
       left:12px; right:12px;
-      top:54px; bottom:70px;
+      top:12px;            /* ✅ pull playfield up since marquee is gone */
+      bottom:70px;
       border-radius:14px;
       border:1px solid var(--pink-border);
       overflow:hidden;
@@ -329,6 +316,8 @@
       border-radius:999px;
       background: rgba(255,255,255,.55);
       white-space:nowrap;
+      min-width: 120px;
+      text-align:center;
     }
 
     .sidePane{ padding:14px; background: transparent; }
@@ -384,11 +373,6 @@
       <div class="modalBody">
         <div class="machinePane">
           <div class="machine" id="machine">
-            <div class="marquee">
-              <span>Claw Grabber</span>
-              <span style="opacity:.7;font-size:12px;">READY</span>
-            </div>
-
             <div class="playfield" id="playfield">
               <div class="clawRig">
                 <div class="rail"></div>
@@ -412,7 +396,9 @@
 
         <div class="sidePane">
           <div class="panelBox">
-            <h3 class="revealTitle">Your prize ✨</h3>
+            <!-- ✅ title change -->
+            <h3 class="revealTitle">Your message...</h3>
+
             <div class="revealCard">
               <div class="big pulse" id="revealPlaceholder">Win something to reveal a note…</div>
               <div class="msg hidden" id="revealMsg"></div>
@@ -423,9 +409,7 @@
               Pull again (same prompt)
             </button>
 
-            <div class="tiny" style="opacity:.85;">
-              (When all prizes are taken, reset or pick another prompt.)
-            </div>
+            <!-- ✅ removed the "(When all prizes ...)" line -->
           </div>
         </div>
       </div>
@@ -572,7 +556,15 @@ backdrop.addEventListener("click", (e) => { if(e.target === backdrop) closeModal
 
 /** Helpers */
 function setClawStage(stage){ claw.src = CLAW_SRC[stage]; }
-function setStatus(text){ statusPill.textContent = text; }
+
+/* ✅ Unified status behavior requested */
+function setStatus(mode){
+  // mode: "ready" | "grabbing" | "done" | "empty"
+  if(mode === "grabbing") statusPill.textContent = "Grabbing message...";
+  else if(mode === "done") statusPill.textContent = "Message ready!";
+  else if(mode === "empty") statusPill.textContent = "Ready";
+  else statusPill.textContent = "Ready";
+}
 
 function clearReveal(){
   revealPlaceholder.classList.remove("hidden");
@@ -648,12 +640,12 @@ function openPrompt(id){
   clearReveal();
   spawnPrizes(currentPrompt);
 
-  setStatus("Ready");
+  setStatus("ready");
   hintText.textContent = "Press DROP CLAW to grab a prize.";
   anotherBtn.classList.add("hidden");
 }
 
-/** spawn only on right 75%: x >= MIN_SPAWN_X_PCT */
+/** spawn only on right 75% */
 function spawnPrizes(prompt){
   clearPrizes();
 
@@ -701,7 +693,8 @@ async function doPull(){
   if(isBusy || !currentPrompt) return;
 
   if(!remainingIndices.length){
-    setStatus("Empty");
+    // keep pill showing Ready (as you requested)
+    setStatus("ready");
     hintText.textContent = "No prizes left — press Reset prizes.";
     return;
   }
@@ -709,6 +702,9 @@ async function doPull(){
   isBusy = true;
   dropBtn.disabled = true;
   anotherBtn.disabled = true;
+
+  // ✅ when in motion
+  setStatus("grabbing");
 
   const pickedIndex = pickAvailableIndex();
   const pickedPrize = currentPrompt.prizes[pickedIndex];
@@ -719,6 +715,7 @@ async function doPull(){
     isBusy = false;
     dropBtn.disabled = false;
     anotherBtn.disabled = false;
+    setStatus("ready");
     return doPull();
   }
 
@@ -734,13 +731,9 @@ async function doPull(){
 
   setClawStage("open");
 
-  setStatus("Moving right…");
   await tween({ from: START_X_PCT, to: targetXPercent, ms: 650, onUpdate: v => setClawX(v) });
-
-  setStatus("Dropping…");
   await tween({ from: START_Y_PX, to: targetClawTopPx, ms: 520, onUpdate: v => setClawY(v) });
 
-  setStatus("Grabbing…");
   setClawStage("close");
   targetEl.classList.add("grabbed");
   targetEl.style.setProperty("--rot", "0deg");
@@ -749,19 +742,16 @@ async function doPull(){
   positionHeldPrize(targetEl);
   await new Promise(r => setTimeout(r, 140));
 
-  setStatus("Lifting…");
   await tween({
     from: targetClawTopPx, to: START_Y_PX, ms: 520,
     onUpdate: v => { setClawY(v); positionHeldPrize(targetEl); }
   });
 
-  setStatus("Returning…");
   await tween({
     from: targetXPercent, to: START_X_PCT, ms: 650,
     onUpdate: v => { setClawX(v); positionHeldPrize(targetEl); }
   });
 
-  setStatus("Dropping prize…");
   setClawStage("open");
 
   targetEl.style.transition = "transform .35s ease, opacity .35s ease";
@@ -774,9 +764,15 @@ async function doPull(){
   prizeElByIndex.delete(pickedIndex);
   removeAvailableIndex(pickedIndex);
 
-  setStatus("✅ Won!");
+  // ✅ when dropped
+  setStatus("done");
   hintText.textContent = "Prize dropped. Note revealed on the right.";
   showReveal(pickedPrize, currentPrompt.title);
+
+  // after a brief moment, go back to Ready like before
+  setTimeout(() => {
+    if(!isBusy) setStatus("ready");
+  }, 900);
 
   dropBtn.disabled = false;
   anotherBtn.disabled = false;
@@ -790,7 +786,7 @@ resetBtn.addEventListener("click", () => {
   if(!currentPrompt || isBusy) return;
   clearReveal();
   spawnPrizes(currentPrompt);
-  setStatus("Ready");
+  setStatus("ready");
   hintText.textContent = "Prizes reshuffled. Press DROP CLAW.";
 });
 
