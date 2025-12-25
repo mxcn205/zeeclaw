@@ -13,6 +13,8 @@
       --glass2: rgba(255,255,255,.12);
     }
     *{box-sizing:border-box}
+
+    /* ✅ Starter page background */
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
@@ -23,13 +25,11 @@
       align-items:flex-start;
       padding:28px 16px 48px;
 
-      /* ✅ Main page background */
       background-image: url("assets/backgrounds/ZeeArcadeBackground.jpeg");
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
     }
-    /* optional: subtle dark overlay so text is readable */
     body::before{
       content:"";
       position:fixed; inset:0;
@@ -109,7 +109,7 @@
     }
     .modal{
       width:min(860px, 100%);
-      background: linear-gradient(180deg, rgba(17,26,51,.92), rgba(10,14,30,.92));
+      background: rgba(10,14,30,.92);
       border:1px solid rgba(255,255,255,.14);
       border-radius:22px;
       overflow:hidden;
@@ -119,7 +119,7 @@
       display:flex; align-items:center; justify-content:space-between; gap:10px;
       padding:14px 16px;
       border-bottom:1px solid rgba(255,255,255,.10);
-      background: linear-gradient(90deg, rgba(124,92,255,.20), rgba(255,79,216,.12));
+      background: rgba(255,255,255,.06);
     }
     .modalTop .mtitle{ font-weight:800; }
     .btn{
@@ -155,18 +155,18 @@
       .modalBody{ grid-template-columns: 1fr; }
     }
 
-    /* Machine */
+    /* ✅ Remove backgrounds inside claw machine area */
     .machinePane{
       padding:14px;
       border-right:1px solid rgba(255,255,255,.10);
-      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));
+      background: none; /* removed */
     }
     .machine{
       width:100%;
       aspect-ratio: 16/11;
       border-radius:18px;
       border:1px solid rgba(255,255,255,.14);
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      background: none; /* removed */
       position:relative;
       overflow:hidden;
     }
@@ -174,27 +174,13 @@
       position:absolute; left:0; right:0; top:0;
       padding:10px 12px;
       display:flex; align-items:center; justify-content:space-between;
-      background: linear-gradient(90deg, rgba(124,92,255,.26), rgba(255,79,216,.18));
+      background: rgba(255,255,255,.06); /* no gradient */
       border-bottom:1px solid rgba(255,255,255,.12);
       font-weight:900;
       letter-spacing:.8px;
       text-transform:uppercase;
       font-size:12px;
       z-index:5;
-    }
-    .lights{ display:flex; gap:6px; }
-    .light{
-      width:10px; height:10px; border-radius:999px;
-      background: rgba(255,255,255,.25);
-      box-shadow: 0 0 0 rgba(255,255,255,0);
-      animation: blink 1.3s infinite;
-    }
-    .light:nth-child(2){ animation-delay:.2s}
-    .light:nth-child(3){ animation-delay:.4s}
-    .light:nth-child(4){ animation-delay:.6s}
-    @keyframes blink{
-      0%, 100% { background: rgba(255,255,255,.25); box-shadow: 0 0 0 rgba(255,255,255,0); }
-      50% { background: rgba(255,79,216,.85); box-shadow: 0 0 18px rgba(255,79,216,.65); }
     }
 
     .playfield{
@@ -206,18 +192,23 @@
       overflow:hidden;
       z-index:1;
 
-      /* ✅ remove all playfield backgrounds */
-      background: none;
+      background: none; /* removed */
     }
-    .playfield::after{
-      content:"";
+    /* ✅ remove the dark overlay too (it looked like a background) */
+    .playfield::after{ content:none; }
+
+    .glass{
       position:absolute; inset:0;
-      background: linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.22));
+      background:
+        linear-gradient(115deg, rgba(255,255,255,.14), rgba(255,255,255,0) 35%),
+        linear-gradient(250deg, rgba(255,255,255,.08), rgba(255,255,255,0) 40%);
+      opacity: .14;
       pointer-events:none;
-      z-index:1;
+      z-index:6;
+      mix-blend-mode: screen;
     }
 
-    /* ✅ prizes: remove rounded squares + frames */
+    /* prizes: no rounded squares */
     .prize{
       position:absolute;
       width: var(--prizeSize, 92px);
@@ -261,7 +252,7 @@
     .rail{
       position:absolute; left:0; right:0; top:6px;
       height:12px;
-      background: linear-gradient(90deg, rgba(255,255,255,.12), rgba(255,255,255,.05));
+      background: rgba(255,255,255,.08);
       border-bottom:1px solid rgba(255,255,255,.14);
     }
     .cable{
@@ -269,7 +260,7 @@
       width:4px;
       top:18px;
       height:90px;
-      background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.06));
+      background: rgba(255,255,255,.10);
       border-radius:999px;
       left:50%;
       transform: translateX(-50%);
@@ -291,17 +282,6 @@
       object-fit: contain;
       object-position: center;
       display:block;
-    }
-
-    .glass{
-      position:absolute; inset:0;
-      background:
-        linear-gradient(115deg, rgba(255,255,255,.16), rgba(255,255,255,0) 35%),
-        linear-gradient(250deg, rgba(255,255,255,.10), rgba(255,255,255,0) 40%);
-      opacity: .16;
-      pointer-events:none;
-      z-index:6;
-      mix-blend-mode: screen;
     }
 
     .controls{
@@ -326,10 +306,9 @@
       backdrop-filter: blur(6px);
     }
 
-    /* Right panel */
     .sidePane{
       padding:14px;
-      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));
+      background: none;
     }
     .panelBox{
       border-radius:18px;
@@ -397,7 +376,7 @@
             <div class="marquee">
               <span>Claw Grabber 2000</span>
               <div class="lights" aria-hidden="true">
-                <div class="light"></div><div class="light"></div><div class="light"></div><div class="light"></div>
+                <span style="opacity:.65;font-size:12px;">READY</span>
               </div>
             </div>
 
@@ -445,34 +424,23 @@
   </div>
 
 <script>
-/** Claw frames */
 const CLAW_SRC = {
   open:  "assets/machine/ZeeClawOpen.png",
   close: "assets/machine/ZeeClawClose.png",
 };
 
-/**
- * Sizing: keep prize size consistent so it looks like the claw can grab it.
- * Adjust PRIZE_TO_CLAW_GRIP if needed (0.57–0.62 usually).
- */
 const CLAW_BOX_SIZE = 160;
 const PRIZE_TO_CLAW_GRIP = 0.59;
 const PRIZE_SIZE = Math.round(CLAW_BOX_SIZE * PRIZE_TO_CLAW_GRIP);
 
-/** Movement */
 const START_X_PCT = 10;
 const START_Y_PX  = 18;
 const HOLD_Y_OFFSET_PX = 56;
 const GRAB_POINT_Y_FRAC = 0.74;
 
-/**
- * ✅ Drop area exclusion:
- * Prizes will NEVER spawn under the claw start (top-left drop zone).
- * Anything with x < DROP_ZONE_MAX_X is avoided.
- */
-const DROP_ZONE_MAX_X = 26; // percent (leave a clear lane on the left)
+/* ✅ Only spawn in right 75% of playfield */
+const MIN_SPAWN_X_PCT = 25; // x must be >= 25
 
-/** PROMPTS (no machine background usage anymore) */
 const PROMPTS = [
   {
     id: "miss",
@@ -509,7 +477,6 @@ const PROMPTS = [
   },
 ];
 
-/** DOM */
 const grid = document.getElementById("promptGrid");
 const backdrop = document.getElementById("backdrop");
 const modalTitle = document.getElementById("modalTitle");
@@ -527,13 +494,11 @@ const cable = document.getElementById("cable");
 const clawBox = document.getElementById("clawBox");
 const claw = document.getElementById("claw");
 
-/** State */
 let currentPrompt = null;
 let prizeElByIndex = new Map();
 let remainingIndices = [];
 let isBusy = false;
 
-/** UI build */
 function makeCard(p){
   const el = document.createElement("div");
   el.className = "card";
@@ -547,7 +512,6 @@ function makeCard(p){
 }
 PROMPTS.forEach(p => grid.appendChild(makeCard(p)));
 
-/** Modal control */
 function openModal(){
   backdrop.style.display = "flex";
   backdrop.setAttribute("aria-hidden", "false");
@@ -563,11 +527,8 @@ function closeModal(){
   setStatus("Ready");
 }
 closeBtn.addEventListener("click", closeModal);
-backdrop.addEventListener("click", (e) => {
-  if(e.target === backdrop) closeModal();
-});
+backdrop.addEventListener("click", (e) => { if(e.target === backdrop) closeModal(); });
 
-/** Helpers */
 function setClawStage(stage){ claw.src = CLAW_SRC[stage]; }
 function setStatus(text){ statusPill.textContent = text; }
 
@@ -578,7 +539,6 @@ function clearReveal(){
   revealMsg.textContent = "";
   revealTiny.textContent = "";
 }
-
 function showReveal(prize, promptTitle){
   revealPlaceholder.classList.add("hidden");
   revealMsg.classList.remove("hidden");
@@ -594,7 +554,6 @@ function clearPrizes(){
   remainingIndices = [];
 }
 
-/** Positioning & tween */
 function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
 function getPlayfieldRect(){ return playfield.getBoundingClientRect(); }
 
@@ -617,8 +576,7 @@ function tween({from, to, ms, onUpdate}){
     function frame(t){
       const p = Math.min(1, (t - start) / ms);
       const eased = p < 0.5 ? 2*p*p : 1 - Math.pow(-2*p+2,2)/2;
-      const v = from + (to - from)*eased;
-      onUpdate(v);
+      onUpdate(from + (to - from)*eased);
       if(p < 1) requestAnimationFrame(frame);
       else resolve();
     }
@@ -629,21 +587,15 @@ function tween({from, to, ms, onUpdate}){
 function getClawCenterInPlayfield(){
   const pf = getPlayfieldRect();
   const cr = clawBox.getBoundingClientRect();
-  return {
-    x: (cr.left + cr.width/2) - pf.left,
-    y: (cr.top + cr.height/2) - pf.top
-  };
+  return { x: (cr.left + cr.width/2) - pf.left, y: (cr.top + cr.height/2) - pf.top };
 }
 function positionHeldPrize(prizeEl){
   const pf = getPlayfieldRect();
   const c = getClawCenterInPlayfield();
-  const xPct = (c.x / pf.width) * 100;
-  const yPct = ((c.y + HOLD_Y_OFFSET_PX) / pf.height) * 100;
-  prizeEl.style.left = `${xPct}%`;
-  prizeEl.style.top  = `${yPct}%`;
+  prizeEl.style.left = `${(c.x / pf.width) * 100}%`;
+  prizeEl.style.top  = `${((c.y + HOLD_Y_OFFSET_PX) / pf.height) * 100}%`;
 }
 
-/** Prompt open */
 function openPrompt(id){
   currentPrompt = PROMPTS.find(p => p.id === id);
   if(!currentPrompt) return;
@@ -658,18 +610,15 @@ function openPrompt(id){
   anotherBtn.classList.add("hidden");
 }
 
-/**
- * ✅ Spawn spots: exclude the left drop lane under the claw start.
- * We keep all x >= DROP_ZONE_MAX_X.
- */
+/* ✅ spawn only on right 75%: x >= MIN_SPAWN_X_PCT */
 function spawnPrizes(prompt){
   clearPrizes();
 
-  // safe spawn spots (x all >= DROP_ZONE_MAX_X)
   const spots = [
-    {x: 34, y: 70}, {x: 48, y: 78}, {x: 62, y: 72}, {x: 76, y: 80}, {x: 56, y: 88},
-    {x: 38, y: 84}, {x: 70, y: 86},
-  ].filter(s => s.x >= DROP_ZONE_MAX_X);
+    {x: 28, y: 70}, {x: 40, y: 78}, {x: 52, y: 88},
+    {x: 62, y: 72}, {x: 74, y: 80}, {x: 84, y: 86},
+    {x: 70, y: 86}, {x: 46, y: 84}, {x: 58, y: 80},
+  ].filter(s => s.x >= MIN_SPAWN_X_PCT);
 
   const shuffled = [...spots].sort(() => Math.random() - 0.5);
 
@@ -689,24 +638,20 @@ function spawnPrizes(prompt){
     remainingIndices.push(i);
   });
 
-  // start claw at top-left
   setClawStage("open");
   setClawX(START_X_PCT);
   setClawY(START_Y_PX);
 }
 
-/** Pick only an available prize */
 function pickAvailableIndex(){
   if(!remainingIndices.length) return null;
-  const j = Math.floor(Math.random() * remainingIndices.length);
-  return remainingIndices[j];
+  return remainingIndices[Math.floor(Math.random() * remainingIndices.length)];
 }
 function removeAvailableIndex(idx){
   const k = remainingIndices.indexOf(idx);
   if(k >= 0) remainingIndices.splice(k, 1);
 }
 
-/** Main pull */
 async function doPull(){
   if(isBusy || !currentPrompt) return;
 
@@ -720,19 +665,7 @@ async function doPull(){
   dropBtn.disabled = true;
   anotherBtn.disabled = true;
 
-  setStatus("Choosing…");
-  hintText.textContent = "Finding an available prize…";
-
   const pickedIndex = pickAvailableIndex();
-  if(pickedIndex === null){
-    setStatus("Empty");
-    hintText.textContent = "No prizes left — press Reset prizes.";
-    isBusy = false;
-    dropBtn.disabled = false;
-    anotherBtn.disabled = false;
-    return;
-  }
-
   const pickedPrize = currentPrompt.prizes[pickedIndex];
   const targetEl = prizeElByIndex.get(pickedIndex);
 
@@ -752,23 +685,15 @@ async function doPull(){
 
   const targetCenterY = (tRect.top + tRect.height/2) - pf.top;
   const grabPointOffsetPx = CLAW_BOX_SIZE * GRAB_POINT_Y_FRAC;
-  let targetClawTopPx = targetCenterY - grabPointOffsetPx;
-  targetClawTopPx = clamp(targetClawTopPx, 10, pf.height - CLAW_BOX_SIZE + 8);
+  let targetClawTopPx = clamp(targetCenterY - grabPointOffsetPx, 10, pf.height - CLAW_BOX_SIZE + 8);
 
-  // start position
   setClawStage("open");
-  setStatus("Start…");
-  await tween({ from: parseFloat(clawBox.style.left || String(START_X_PCT)), to: START_X_PCT, ms: 180, onUpdate: v => setClawX(v) });
-  await tween({ from: parseFloat(clawBox.style.top  || String(START_Y_PX)),  to: START_Y_PX,  ms: 180, onUpdate: v => setClawY(v) });
-
-  // move right then down
   setStatus("Moving right…");
   await tween({ from: START_X_PCT, to: targetXPercent, ms: 650, onUpdate: v => setClawX(v) });
 
   setStatus("Dropping…");
   await tween({ from: START_Y_PX, to: targetClawTopPx, ms: 520, onUpdate: v => setClawY(v) });
 
-  // close + grab (carry real element)
   setStatus("Grabbing…");
   setClawStage("close");
   targetEl.classList.add("grabbed");
@@ -778,7 +703,6 @@ async function doPull(){
   positionHeldPrize(targetEl);
   await new Promise(r => setTimeout(r, 140));
 
-  // lift then return left
   setStatus("Lifting…");
   await tween({
     from: targetClawTopPx, to: START_Y_PX, ms: 520,
@@ -791,10 +715,8 @@ async function doPull(){
     onUpdate: v => { setClawX(v); positionHeldPrize(targetEl); }
   });
 
-  // open + drop at left lane
   setStatus("Dropping prize…");
   setClawStage("open");
-  hintText.textContent = "Prize dropped. Note revealed on the right.";
 
   targetEl.style.transition = "transform .35s ease, opacity .35s ease";
   targetEl.style.transform = "translate(-10px, 260px) scale(.92) rotate(-10deg)";
@@ -807,6 +729,7 @@ async function doPull(){
   removeAvailableIndex(pickedIndex);
 
   setStatus("✅ Won!");
+  hintText.textContent = "Prize dropped. Note revealed on the right.";
   showReveal(pickedPrize, currentPrompt.title);
 
   dropBtn.disabled = false;
