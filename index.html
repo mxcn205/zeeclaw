@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Open When… (Claw Machine)</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#111a33;
+      --panel2:#0e1630;
+      --text:#eaf0ff;
+      --muted:#b9c4ff;
+      --accent:#7c5cff;
+      --accent2:#ff4fd8;
+      --good:#43ffa0;
+      --glass: rgba(255,255,255,.08);
+      --glass2: rgba(255,255,255,.12);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: radial-gradient(1200px 700px at 20% 10%, #1a2a66 0%, transparent 55%),
+                  radial-gradient(900px 600px at 85% 20%, #4a1a66 0%, transparent 55%),
+                  linear-gradient(180deg, var(--bg), #070a14);
+      color:var(--text);
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+      padding:28px 16px 48px;
+    }
+    .wrap{width:min(980px,100%)}
+    header{
+      display:flex; align-items:flex-end; justify-content:space-between; gap:16px;
+      margin-bottom:18px;
+    }
+    h1{
+      margin:0;
+      font-size: clamp(24px, 4vw, 38px);
+      letter-spacing:.2px;
+    }
+    .sub{
+      margin:6px 0 0;
+      color:var(--muted);
+      max-width:60ch;
+      line-height:1.4;
+    }
+    .badge{
+      padding:10px 12px;
+      background: linear-gradient(135deg, var(--glass), var(--glass2));
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;
+      color:var(--muted);
+      font-size:13px;
+      white-space:nowrap;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+      margin-top:16px;
+    }
+    .card{
+      grid-column: span 6;
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:18px;
+      padding:16px;
+      cursor:pointer;
+      transition: transform .12s ease, border-color .12s ease;
+      position:relative;
+      overflow:hidden;
+    }
+    .card:hover{ transform: translateY(-2px); border-color: rgba(124,92,255,.55); }
+    .card:active{ transform: translateY(0px); }
+    .card .title{ font-weight:700; font-size:16px; margin:0 0 6px; }
+    .card .desc{ margin:0; color:var(--muted); font-size:13.5px; line-height:1.35; }
+    .pill{
+      position:absolute; top:12px; right:12px;
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      background: rgba(124,92,255,.16);
+      border:1px solid rgba(124,92,255,.38);
+      color: #dcd6ff;
+    }
+    @media (max-width: 720px){
+      .card{ grid-column: span 12; }
+      header{ flex-direction:column; align-items:flex-start; }
+      .badge{ width:100%; }
+    }
+
+    /* Modal */
+    .modalBackdrop{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.6);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:50;
+    }
+    .modal{
+      width:min(860px, 100%);
+      background: linear-gradient(180deg, rgba(17,26,51,.92), rgba(10,14,30,.92));
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:22px;
+      overflow:hidden;
+      box-shadow: 0 30px 80px rgba(0,0,0,.55);
+    }
+    .modalTop{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      background: linear-gradient(90deg, rgba(124,92,255,.20), rgba(255,79,216,.12));
+    }
+    .modalTop .mtitle{ font-weight:800; }
+    .btn{
+      appearance:none;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.08);
+      color:var(--text);
+      border-radius:14px;
+      padding:10px 12px;
+      cursor:pointer;
+      transition: transform .1s ease, background .1s ease, border-color .1s ease;
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .btn:hover{ background: rgba(255,255,255,.11); border-color: rgba(255,255,255,.22); transform: translateY(-1px); }
+    .btn:active{ transform: translateY(0px); }
+    .btnPrimary{
+      background: linear-gradient(135deg, rgba(124,92,255,.85), rgba(255,79,216,.65));
+      border-color: rgba(255,255,255,.18);
+    }
+    .btnPrimary:hover{ background: linear-gradient(135deg, rgba(124,92,255,.95), rgba(255,79,216,.72)); }
+    .btnGood{
+      background: linear-gradient(135deg, rgba(67,255,160,.75), rgba(124,92,255,.55));
+    }
+    .modalBody{
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap:0;
+      min-height: 520px;
+    }
+    @media (max-width: 860px){
+      .modalBody{ grid-template-columns: 1fr; }
+    }
+
+    /* Machine */
+    .machinePane{
+      padding:14px;
+      border-right:1px solid rgba(255,255,255,.10);
+      background:
+        radial-gradient(700px 400px at 30% 25%, rgba(124,92,255,.18), transparent 55%),
+        radial-gradient(600px 360px at 75% 30%, rgba(255,79,216,.12), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+    }
+    .machine{
+      width:100%;
+      aspect-ratio: 16/11;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.14);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      position:relative;
+      overflow:hidden;
+    }
+    .glass{
+      position:absolute; inset:0;
+      background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.02));
+      pointer-events:none;
+    }
+    .marquee{
+      position:absolute; left:0; right:0; top:0;
+      padding:10px 12px;
+      display:flex; align-items:center; justify-content:space-between;
+      background: linear-gradient(90deg, rgba(124,92,255,.26), rgba(255,79,216,.18));
+      border-bottom:1px solid rgba(255,255,255,.12);
+      font-weight:900;
+      letter-spacing:.8px;
+      text-transform:uppercase;
+      font-size:12px;
+    }
+    .lights{
+      display:flex; gap:6px;
+    }
+    .light{
+      width:10px; height:10px; border-radius:999px;
+      background: rgba(255,255,255,.25);
+      box-shadow: 0 0 0 rgba(255,255,255,0);
+      animation: blink 1.3s infinite;
+    }
+    .light:nth-child(2){ animation-delay:.2s}
+    .light:nth-child(3){ animation-delay:.4s}
+    .light:nth-child(4){ animation-delay:.6s}
+    @keyframes blink{
+      0%, 100% { background: rgba(255,255,255,.25); box-shadow: 0 0 0 rgba(255,255,255,0); }
+      50% { background: rgba(255,79,216,.85); box-shadow: 0 0 18px rgba(255,79,216,.65); }
+    }
+
+    .playfield{
+      position:absolute;
+      left:12px; right:12px;
+      top:54px; bottom:70px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(500px 250px at 35% 30%, rgba(124,92,255,.18), transparent 60%),
+        radial-gradient(420px 220px at 80% 40%, rgba(255,79,216,.12), transparent 60%),
+        linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.22));
+      overflow:hidden;
+    }
+
+    .prize{
+      position:absolute;
+      width:72px; height:72px;
+      border-radius:18px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:34px;
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.16);
+      box-shadow: 0 10px 22px rgba(0,0,0,.25);
+      transform: rotate(var(--rot, 0deg));
+      user-select:none;
+    }
+    .prize small{
+      position:absolute; bottom:6px; left:6px; right:6px;
+      font-size:10px;
+      color: rgba(234,240,255,.85);
+      text-align:center;
+      opacity:.85;
+    }
+
+    .clawRig{
+      position:absolute;
+      left:0; right:0;
+      top:-6px;
+      height:140px;
+      pointer-events:none;
+    }
+    .rail{
+      position:absolute; left:0; right:0; top:6px;
+      height:12px;
+      background: linear-gradient(90deg, rgba(255,255,255,.12), rgba(255,255,255,.05));
+      border-bottom:1px solid rgba(255,255,255,.14);
+    }
+    .cable{
+      position:absolute;
+      width:4px;
+      top:18px;
+      height:90px;
+      background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.06));
+      border-radius:999px;
+      left:50%;
+      transform: translateX(-50%);
+    }
+    .claw{
+      position:absolute;
+      top:92px;
+      left:50%;
+      transform: translateX(-50%);
+      width:70px; height:52px;
+      filter: drop-shadow(0 10px 10px rgba(0,0,0,.25));
+    }
+    .claw svg{ width:100%; height:100%; display:block; }
+
+    .controls{
+      position:absolute; left:12px; right:12px; bottom:12px;
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+      background: rgba(0,0,0,.22);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      padding:10px;
+    }
+    .hint{ color: var(--muted); font-size:12.5px; line-height:1.2; }
+    .status{
+      font-size:12.5px;
+      color: rgba(234,240,255,.92);
+      padding:6px 10px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:999px;
+      background: rgba(255,255,255,.06);
+      white-space:nowrap;
+    }
+
+    /* Right panel (message reveal) */
+    .sidePane{
+      padding:14px;
+      background:
+        radial-gradient(520px 320px at 25% 20%, rgba(255,79,216,.10), transparent 62%),
+        radial-gradient(520px 320px at 80% 35%, rgba(124,92,255,.12), transparent 62%),
+        linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));
+    }
+    .panelBox{
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      padding:14px;
+      min-height: 100%;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .revealTitle{
+      font-weight:900;
+      letter-spacing:.3px;
+      margin:0;
+    }
+    .revealCard{
+      border-radius:16px;
+      border:1px dashed rgba(255,255,255,.18);
+      padding:12px;
+      background: rgba(0,0,0,.15);
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:10px;
+    }
+    .revealCard .big{
+      font-size:14px;
+      color: var(--muted);
+      line-height:1.5;
+    }
+    .revealCard .msg{
+      font-size:14.5px;
+      line-height:1.6;
+      white-space:pre-wrap;
+    }
+    .tiny{
+      font-size:12px;
+      color: rgba(234,240,255,.75);
+    }
+    .pulse{
+      animation: pulse .9s ease-in-out infinite;
+    }
+    @keyframes pulse{
+      0%,100%{ transform:scale(1); opacity:.95; }
+      50%{ transform:scale(1.02); opacity:1; }
+    }
+    .hidden{ display:none !important; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Open When… 🎄🕹️</h1>
+        <p class="sub">
+          Pick a prompt, then win a note from the claw machine. Each prompt has its own mini “prize pool” so it feels fresh every time.
+        </p>
+      </div>
+      <div class="badge">Tip: replace the sample notes with your real ones 💌</div>
+    </header>
+
+    <div class="grid" id="promptGrid"></div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modalBackdrop" id="backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Claw Machine">
+      <div class="modalTop">
+        <div class="mtitle" id="modalTitle">Open when…</div>
+        <div style="display:flex; gap:10px;">
+          <button class="btn" id="resetBtn" type="button">Reset prizes</button>
+          <button class="btn" id="closeBtn" type="button">Close</button>
+        </div>
+      </div>
+
+      <div class="modalBody">
+        <div class="machinePane">
+          <div class="machine" id="machine">
+            <div class="marquee">
+              <span>Claw Grabber 2000</span>
+              <div class="lights" aria-hidden="true">
+                <div class="light"></div><div class="light"></div><div class="light"></div><div class="light"></div>
+              </div>
+            </div>
+
+            <div class="playfield" id="playfield">
+              <div class="clawRig" id="clawRig">
+                <div class="rail"></div>
+                <div class="cable" id="cable"></div>
+                <div class="claw" id="claw">
+                  <svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0" stop-color="rgba(255,255,255,.85)"/>
+                        <stop offset="1" stop-color="rgba(255,255,255,.35)"/>
+                      </linearGradient>
+                    </defs>
+                    <path d="M60 8c10 0 18 8 18 18v6h8c7 0 12 5 12 12 0 10-10 18-22 18h-4l8 18-10 4-16-22-16 22-10-4 8-18h-4C20 80 10 72 10 62c0-7 5-12 12-12h8v-6C30 16 38 8 48 8h12z"
+                          fill="url(#g)" opacity=".95"/>
+                    <circle cx="60" cy="28" r="10" fill="rgba(124,92,255,.35)"/>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="glass"></div>
+            </div>
+
+            <div class="controls">
+              <div class="hint" id="hintText">Press DROP CLAW to grab a random prize.</div>
+              <div style="display:flex; gap:10px; align-items:center;">
+                <span class="status" id="statusPill">Ready</span>
+                <button class="btn btnPrimary" id="dropBtn" type="button">DROP CLAW</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidePane">
+          <div class="panelBox">
+            <h3 class="revealTitle">Your prize ✨</h3>
+            <div class="revealCard" id="revealCard">
+              <div class="big pulse" id="revealPlaceholder">Win something to reveal a note…</div>
+              <div class="msg hidden" id="revealMsg"></div>
+              <div class="tiny hidden" id="revealTiny"></div>
+            </div>
+
+            <button class="btn btnGood hidden" id="anotherBtn" type="button">
+              Pull again (same prompt)
+            </button>
+            <div class="tiny" style="opacity:.85;">
+              If you want: make “Pull again” limited to once per day (easy to add).
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+/**
+ * EDIT THIS: prompts + notes.
+ * Each prompt has 4–5 messages. You can add more.
+ * You can also set a little "prize label" or emoji per message if you want.
+ */
+const PROMPTS = [
+  {
+    id: "miss",
+    title: "Open when you miss me",
+    blurb: "A few little reminders that I’m always with you.",
+    prizes: [
+      { icon: "🍾", label: "Message in a bottle", note: "If you’re missing me right now, do one thing for me:\nClose your eyes for 5 seconds and imagine I’m hugging you from behind.\nI’m proud of you. I’m with you. Always." },
+      { icon: "💌", label: "Rolled letter", note: "I miss you too.\nBut I love that even from far away, you still feel like home to me.\nWe’ll make it to the next hug. I promise." },
+      { icon: "🧸", label: "Tiny plush", note: "This is your reminder that you are deeply loved.\nNot because of what you do—just because you’re you." },
+      { icon: "🌙", label: "Night note", note: "If it’s late where you are: I’m proud of how hard you’re trying.\nDrink water, breathe, and let yourself rest.\nI’m right here in spirit." },
+      { icon: "⭐", label: "Lucky star", note: "One day we’ll look back on this distance and laugh.\nUntil then: you + me, same team, same future." },
+    ]
+  },
+  {
+    id: "sad",
+    title: "Open when you feel sad",
+    blurb: "Soft comfort. No fixing—just me loving you.",
+    prizes: [
+      { icon: "🍵", label: "Warm tea", note: "You don’t have to be strong right now.\nLet it be a heavy day if it is.\nI love you through all of it." },
+      { icon: "🫧", label: "Bubble note", note: "Here’s a tiny task: unclench your jaw, drop your shoulders, breathe out slowly.\nAgain.\nI’m here." },
+      { icon: "🕯️", label: "Candle", note: "Even if today feels messy, you’re not failing.\nYou’re human.\nAnd I’m not going anywhere." },
+      { icon: "🧡", label: "Heart", note: "You are safe to feel what you feel.\nI love you—no conditions, no performance required." },
+    ]
+  },
+  {
+    id: "stressed",
+    title: "Open when you feel stressed",
+    blurb: "Gentle grounding + a little boost.",
+    prizes: [
+      { icon: "🧠", label: "Brain reset", note: "Pick ONE small thing.\nDo it for 10 minutes.\nThen reassess.\nYou don’t have to solve everything at once." },
+      { icon: "📝", label: "Checklist", note: "You can do hard things.\nAlso: you can do them slowly.\nI believe in you so much." },
+      { icon: "🎧", label: "Music", note: "Put on a comfort song.\nText me one sentence about what’s stressing you.\nWe’ll shrink it together." },
+      { icon: "🏁", label: "Finish line", note: "I’m proud of your effort more than your outcome.\nYou’re already doing the brave part: showing up." },
+      { icon: "🌿", label: "Breathe", note: "In for 4… hold 4… out 6.\nRepeat 3 times.\nThen tell yourself: ‘I’m safe. I’m capable. I’m loved.’" },
+    ]
+  },
+  {
+    id: "happy",
+    title: "Open when you feel happy",
+    blurb: "Because I want to celebrate you too.",
+    prizes: [
+      { icon: "🎉", label: "Confetti", note: "I LOVE seeing you happy.\nTell me what happened so I can celebrate properly!!!" },
+      { icon: "📸", label: "Snapshot", note: "Save this moment.\nYou deserve more days that feel like this.\nI’m cheering for you from here." },
+      { icon: "🥇", label: "Gold medal", note: "Reminder: you earned this feeling.\nI’m proud of you, always." },
+      { icon: "💃", label: "Dance", note: "Do a tiny victory dance for me.\nYes. Right now.\nI’m smiling just imagining it." },
+    ]
+  },
+];
+
+// ---------- UI wiring ----------
+const grid = document.getElementById("promptGrid");
+const backdrop = document.getElementById("backdrop");
+const modalTitle = document.getElementById("modalTitle");
+const playfield = document.getElementById("playfield");
+const dropBtn = document.getElementById("dropBtn");
+const resetBtn = document.getElementById("resetBtn");
+const closeBtn = document.getElementById("closeBtn");
+const statusPill = document.getElementById("statusPill");
+const hintText = document.getElementById("hintText");
+
+const revealPlaceholder = document.getElementById("revealPlaceholder");
+const revealMsg = document.getElementById("revealMsg");
+const revealTiny = document.getElementById("revealTiny");
+const anotherBtn = document.getElementById("anotherBtn");
+
+const clawRig = document.getElementById("clawRig");
+const cable = document.getElementById("cable");
+const claw = document.getElementById("claw");
+
+let currentPrompt = null;
+let prizesDom = [];
+let isBusy = false;
+
+function makeCard(p){
+  const el = document.createElement("div");
+  el.className = "card";
+  el.innerHTML = `
+    <div class="pill">${p.prizes.length} prizes</div>
+    <p class="title">${p.title}</p>
+    <p class="desc">${p.blurb}</p>
+  `;
+  el.addEventListener("click", () => openPrompt(p.id));
+  return el;
+}
+
+PROMPTS.forEach(p => grid.appendChild(makeCard(p)));
+
+function openModal(){
+  backdrop.style.display = "flex";
+  backdrop.setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+}
+function closeModal(){
+  backdrop.style.display = "none";
+  backdrop.setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  currentPrompt = null;
+  clearReveal();
+  clearPrizes();
+  setStatus("Ready");
+}
+closeBtn.addEventListener("click", closeModal);
+backdrop.addEventListener("click", (e) => {
+  if(e.target === backdrop) closeModal();
+});
+
+function openPrompt(id){
+  currentPrompt = PROMPTS.find(p => p.id === id);
+  if(!currentPrompt) return;
+
+  modalTitle.textContent = currentPrompt.title;
+  openModal();
+  clearReveal();
+  spawnPrizes(currentPrompt);
+  setStatus("Ready");
+  hintText.textContent = "Press DROP CLAW to grab a random prize.";
+  anotherBtn.classList.add("hidden");
+}
+
+// ---------- Machine: prizes + claw ----------
+function clearPrizes(){
+  prizesDom.forEach(d => d.remove());
+  prizesDom = [];
+}
+
+function spawnPrizes(prompt){
+  clearPrizes();
+  // place prizes in a loose grid near the bottom
+  const pf = playfield.getBoundingClientRect();
+  // We'll position relative to playfield dimensions, but using % is easiest.
+  const spots = [
+    {x: 18, y: 72}, {x: 40, y: 78}, {x: 62, y: 72}, {x: 78, y: 80}, {x: 52, y: 88}
+  ];
+  const shuffled = [...spots].sort(() => Math.random() - 0.5);
+
+  prompt.prizes.forEach((pr, i) => {
+    const spot = shuffled[i % shuffled.length];
+    const el = document.createElement("div");
+    el.className = "prize";
+    el.style.left = `${spot.x}%`;
+    el.style.top  = `${spot.y}%`;
+    el.style.transform = `translate(-50%, -50%) rotate(${(Math.random()*18-9).toFixed(1)}deg)`;
+    el.innerHTML = `<div aria-hidden="true">${pr.icon}</div><small>${pr.label}</small>`;
+    el.dataset.index = String(i);
+    playfield.appendChild(el);
+    prizesDom.push(el);
+  });
+
+  // Reset claw position
+  setClawX(50);
+  setClawY(92); // starting y in px within clawRig
+}
+
+function setClawX(percent){
+  clawRig.style.left = "0";
+  clawRig.style.right = "0";
+  claw.style.left = `${percent}%`;
+  cable.style.left = `${percent}%`;
+}
+function setClawY(px){
+  claw.style.top = `${px}px`;
+  // cable length feels longer as claw drops
+  const cableHeight = Math.max(46, Math.min(150, px - 10));
+  cable.style.height = `${cableHeight}px`;
+}
+
+function setStatus(text){
+  statusPill.textContent = text;
+}
+
+// Animation helper
+function tween({from, to, ms, onUpdate}){
+  return new Promise(resolve => {
+    const start = performance.now();
+    function frame(t){
+      const p = Math.min(1, (t - start) / ms);
+      const eased = p < 0.5 ? 2*p*p : 1 - Math.pow(-2*p+2,2)/2; // easeInOutQuad
+      const v = from + (to - from)*eased;
+      onUpdate(v);
+      if(p < 1) requestAnimationFrame(frame);
+      else resolve();
+    }
+    requestAnimationFrame(frame);
+  });
+}
+
+function clearReveal(){
+  revealPlaceholder.classList.remove("hidden");
+  revealMsg.classList.add("hidden");
+  revealTiny.classList.add("hidden");
+  revealMsg.textContent = "";
+  revealTiny.textContent = "";
+}
+
+function showReveal(prize, promptTitle){
+  revealPlaceholder.classList.add("hidden");
+  revealMsg.classList.remove("hidden");
+  revealTiny.classList.remove("hidden");
+  revealMsg.textContent = prize.note;
+  revealTiny.textContent = `Pulled from: ${promptTitle} • Prize: ${prize.label} ${prize.icon}`;
+  anotherBtn.classList.remove("hidden");
+}
+
+async function doPull(){
+  if(isBusy || !currentPrompt) return;
+  isBusy = true;
+  dropBtn.disabled = true;
+  anotherBtn.disabled = true;
+
+  setStatus("Dropping…");
+  hintText.textContent = "Claw is choosing…";
+
+  // Choose a random prize index for this prompt
+  const pickedIndex = Math.floor(Math.random() * currentPrompt.prizes.length);
+  const pickedPrize = currentPrompt.prizes[pickedIndex];
+
+  // Find the corresponding DOM prize to "grab"
+  const targetEl = prizesDom.find(el => Number(el.dataset.index) === pickedIndex) || prizesDom[0];
+  const pfRect = playfield.getBoundingClientRect();
+  const tRect = targetEl.getBoundingClientRect();
+
+  // Compute target x% in playfield
+  const targetCenterX = (tRect.left + tRect.width/2) - pfRect.left; // px
+  const targetXPercent = (targetCenterX / pfRect.width) * 100;
+
+  // Move claw horizontally
+  setStatus("Aiming…");
+  await tween({
+    from: parseFloat(claw.style.left || "50"),
+    to: targetXPercent,
+    ms: 650,
+    onUpdate: v => setClawX(v)
+  });
+
+  // Drop claw
+  setStatus("Grabbing…");
+  await tween({
+    from: 92,
+    to: 175,
+    ms: 520,
+    onUpdate: v => setClawY(v)
+  });
+
+  // "Grab": lift prize toward claw + shrink a bit
+  targetEl.style.transition = "transform .2s ease, opacity .2s ease";
+  targetEl.style.transform = "translate(-50%, -50%) scale(0.92)";
+  await new Promise(r => setTimeout(r, 160));
+
+  // Lift claw back up
+  setStatus("Lifting…");
+  // attach prize visually to claw while lifting
+  const attach = document.createElement("div");
+  attach.style.position = "absolute";
+  attach.style.left = "50%";
+  attach.style.top = "190px";
+  attach.style.transform = "translate(-50%, -50%)";
+  attach.style.width = "72px";
+  attach.style.height = "72px";
+  attach.style.borderRadius = "18px";
+  attach.style.display = "flex";
+  attach.style.alignItems = "center";
+  attach.style.justifyContent = "center";
+  attach.style.fontSize = "34px";
+  attach.style.background = "rgba(255,255,255,.08)";
+  attach.style.border = "1px solid rgba(255,255,255,.16)";
+  attach.style.boxShadow = "0 10px 22px rgba(0,0,0,.25)";
+  attach.innerHTML = `<div aria-hidden="true">${pickedPrize.icon}</div>`;
+  playfield.appendChild(attach);
+
+  // fade the original prize out to simulate it being lifted
+  targetEl.style.opacity = "0";
+  targetEl.style.pointerEvents = "none";
+
+  await tween({
+    from: 175,
+    to: 92,
+    ms: 520,
+    onUpdate: v => {
+      setClawY(v);
+      attach.style.top = `${v + 100}px`;
+    }
+  });
+
+  // Slide claw slightly to "prize chute" (left-ish), then drop the attach
+  setStatus("Delivering…");
+  await tween({
+    from: targetXPercent,
+    to: 16,
+    ms: 520,
+    onUpdate: v => setClawX(v)
+  });
+
+  setStatus("✅ Won!");
+  hintText.textContent = "Prize delivered. Note revealed on the right.";
+
+  // Drop the attach into chute (bottom-left vibe)
+  attach.style.transition = "transform .35s ease, opacity .35s ease";
+  attach.style.transform = "translate(-180px, 210px) scale(.85) rotate(-18deg)";
+  attach.style.opacity = "0";
+  await new Promise(r => setTimeout(r, 380));
+  attach.remove();
+
+  // Reveal the note
+  showReveal(pickedPrize, currentPrompt.title);
+
+  dropBtn.disabled = false;
+  anotherBtn.disabled = false;
+  isBusy = false;
+}
+
+dropBtn.addEventListener("click", doPull);
+anotherBtn.addEventListener("click", () => {
+  // Pull again within same prompt
+  clearReveal();
+  doPull();
+});
+
+resetBtn.addEventListener("click", () => {
+  if(!currentPrompt || isBusy) return;
+  clearReveal();
+  spawnPrizes(currentPrompt);
+  setStatus("Ready");
+  hintText.textContent = "Prizes reshuffled. Press DROP CLAW.";
+});
+
+// Keyboard: ESC closes
+document.addEventListener("keydown", (e) => {
+  if(e.key === "Escape" && backdrop.style.display === "flex") closeModal();
+});
+</script>
+</body>
+</html>
