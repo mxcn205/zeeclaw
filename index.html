@@ -194,35 +194,34 @@
       top:12px;
       bottom:70px;
       border-radius:14px;
-      /* IMPORTANT: keep border visible above the drop image */
       border:1px solid var(--pink-border);
       overflow:hidden;
       z-index:1;
       background: rgba(255,255,255,.20);
     }
 
-    /* ✅ ZeeClawDrop image in lower-left corner */
+    /* ✅ Narrow drop image area: left 25% of playfield */
     .dropImg{
       position:absolute;
       left: 0;
       bottom: 0;
-      width: 180px;        /* tweak if you want bigger/smaller */
+      width: 25%;
       height: auto;
-      opacity: 1;
+      max-height: 100%;
       pointer-events:none;
-      z-index: 2;          /* below outline layer */
+      z-index: 2; /* below outline */
       -webkit-user-drag:none;
       user-select:none;
     }
 
-    /* ✅ A top “outline layer” to ensure playfield border is above ZeeClawDrop */
+    /* ✅ keep outline above drop image */
     .playfieldOutline{
       position:absolute;
       inset:0;
       border-radius:14px;
       border:1px solid var(--pink-border);
       pointer-events:none;
-      z-index: 20;         /* above drop image */
+      z-index: 20;
     }
 
     .glass{
@@ -388,7 +387,7 @@
         <div class="machinePane">
           <div class="machine" id="machine">
             <div class="playfield" id="playfield">
-              <!-- ✅ NEW: drop image in bottom-left -->
+              <!-- ✅ Narrow drop area image: left 25% -->
               <img class="dropImg" src="assets/machine/ZeeClawDrop.png" alt="" aria-hidden="true" />
 
               <div class="clawRig">
@@ -399,9 +398,7 @@
                 </div>
               </div>
 
-              <!-- ✅ outline ABOVE the drop image -->
               <div class="playfieldOutline" aria-hidden="true"></div>
-
               <div class="glass"></div>
             </div>
 
@@ -443,7 +440,10 @@ const START_X_PCT = 10;
 const START_Y_PX  = 18;
 const HOLD_Y_OFFSET_PX = 56;
 const GRAB_POINT_Y_FRAC = 0.74;
-const MIN_SPAWN_X_PCT = 25;
+
+/* ✅ Left 25% is drop zone, right 75% is spawn zone */
+const DROP_ZONE_PCT = 25;
+const SPAWN_MIN_X_PCT = DROP_ZONE_PCT; // strict: prizes never appear left of 25%
 
 const HOME_GIFS = {
   happy:   "assets/buttons/ZeeMMHappy.gif",
@@ -452,7 +452,6 @@ const HOME_GIFS = {
   sad:     "assets/buttons/ZeeMMSad.gif",
 };
 
-/* prompts + messages unchanged */
 const PROMPTS = [
   {
     id: "happy",
@@ -647,15 +646,17 @@ function openPrompt(id){
   hintText.textContent = "Press DROP CLAW to grab a prize.";
 }
 
+/* ✅ spawn ONLY in right 75% */
 function spawnPrizes(prompt){
   clearPrizes();
 
   const spots = [
-    {x: 28, y: 70}, {x: 40, y: 78}, {x: 52, y: 88},
-    {x: 62, y: 72}, {x: 74, y: 80}, {x: 84, y: 86},
-    {x: 70, y: 86}, {x: 46, y: 84}, {x: 58, y: 80},
-    {x: 88, y: 74}, {x: 80, y: 72},
-  ].filter(s => s.x >= MIN_SPAWN_X_PCT);
+    {x: 30, y: 70}, {x: 42, y: 78}, {x: 54, y: 88},
+    {x: 64, y: 72}, {x: 76, y: 80}, {x: 86, y: 86},
+    {x: 72, y: 86}, {x: 48, y: 84}, {x: 60, y: 80},
+    {x: 90, y: 74}, {x: 82, y: 72},
+    {x: 68, y: 90}, {x: 92, y: 86}, {x: 58, y: 90},
+  ].filter(s => s.x >= SPAWN_MIN_X_PCT + 2); // +2 for a little buffer
 
   const shuffled = [...spots].sort(() => Math.random() - 0.5);
 
@@ -719,7 +720,10 @@ async function doPull(){
   const tRect = targetEl.getBoundingClientRect();
 
   const targetCenterX = (tRect.left + tRect.width/2) - pf.left;
-  const targetXPercent = (targetCenterX / pf.width) * 100;
+  let targetXPercent = (targetCenterX / pf.width) * 100;
+
+  /* ✅ safety clamp so claw never targets left 25% */
+  targetXPercent = Math.max(targetXPercent, SPAWN_MIN_X_PCT + 2);
 
   const targetCenterY = (tRect.top + tRect.height/2) - pf.top;
   const grabPointOffsetPx = CLAW_BOX_SIZE * GRAB_POINT_Y_FRAC;
