@@ -7,7 +7,6 @@
 
   <style>
     :root{
-      --bg:#0b1020;
       --text:#eaf0ff;
       --muted:#b9c4ff;
       --glass: rgba(255,255,255,.08);
@@ -17,16 +16,28 @@
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      background: radial-gradient(1200px 700px at 20% 10%, #1a2a66 0%, transparent 55%),
-                  radial-gradient(900px 600px at 85% 20%, #4a1a66 0%, transparent 55%),
-                  linear-gradient(180deg, var(--bg), #070a14);
       color:var(--text);
       min-height:100vh;
       display:flex;
       justify-content:center;
       align-items:flex-start;
       padding:28px 16px 48px;
+
+      /* ✅ Main page background */
+      background-image: url("assets/backgrounds/ZeeArcadeBackground.jpeg");
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
     }
+    /* optional: subtle dark overlay so text is readable */
+    body::before{
+      content:"";
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.45);
+      pointer-events:none;
+      z-index:-1;
+    }
+
     .wrap{width:min(980px,100%)}
     header{
       display:flex;
@@ -45,6 +56,7 @@
       color:var(--muted);
       font-size:13px;
       white-space:nowrap;
+      backdrop-filter: blur(6px);
     }
 
     .grid{
@@ -55,16 +67,17 @@
     }
     .card{
       grid-column: span 6;
-      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
-      border:1px solid rgba(255,255,255,.12);
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      border:1px solid rgba(255,255,255,.14);
       border-radius:18px;
       padding:16px;
       cursor:pointer;
-      transition: transform .12s ease, border-color .12s ease;
+      transition: transform .12s ease, border-color .12s ease, background .12s ease;
       position:relative;
       overflow:hidden;
+      backdrop-filter: blur(6px);
     }
-    .card:hover{ transform: translateY(-2px); border-color: rgba(124,92,255,.55); }
+    .card:hover{ transform: translateY(-2px); border-color: rgba(124,92,255,.55); background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.07)); }
     .card:active{ transform: translateY(0px); }
     .card .title{ font-weight:700; font-size:16px; margin:0 0 6px; }
     .card .desc{ margin:0; color:var(--muted); font-size:13.5px; line-height:1.35; }
@@ -76,6 +89,7 @@
       background: rgba(124,92,255,.16);
       border:1px solid rgba(124,92,255,.38);
       color: #dcd6ff;
+      backdrop-filter: blur(6px);
     }
     @media (max-width: 720px){
       .card{ grid-column: span 12; }
@@ -86,7 +100,7 @@
     /* Modal */
     .modalBackdrop{
       position:fixed; inset:0;
-      background: rgba(0,0,0,.6);
+      background: rgba(0,0,0,.65);
       display:none;
       align-items:center;
       justify-content:center;
@@ -119,6 +133,7 @@
       transition: transform .1s ease, background .1s ease, border-color .1s ease;
       font-weight:700;
       letter-spacing:.2px;
+      backdrop-filter: blur(6px);
     }
     .btn:hover{ background: rgba(255,255,255,.11); border-color: rgba(255,255,255,.22); transform: translateY(-1px); }
     .btn:active{ transform: translateY(0px); }
@@ -144,17 +159,14 @@
     .machinePane{
       padding:14px;
       border-right:1px solid rgba(255,255,255,.10);
-      background:
-        radial-gradient(700px 400px at 30% 25%, rgba(124,92,255,.18), transparent 55%),
-        radial-gradient(600px 360px at 75% 30%, rgba(255,79,216,.12), transparent 60%),
-        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));
     }
     .machine{
       width:100%;
       aspect-ratio: 16/11;
       border-radius:18px;
       border:1px solid rgba(255,255,255,.14);
-      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
       position:relative;
       overflow:hidden;
     }
@@ -193,42 +205,45 @@
       border:1px solid rgba(255,255,255,.14);
       overflow:hidden;
       z-index:1;
-      background-size: cover;
-      background-position: center;
-      background-repeat:no-repeat;
+
+      /* ✅ remove all playfield backgrounds */
+      background: none;
     }
     .playfield::after{
       content:"";
       position:absolute; inset:0;
-      background: linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.33));
+      background: linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.22));
       pointer-events:none;
       z-index:1;
     }
 
-    /* prizes */
+    /* ✅ prizes: remove rounded squares + frames */
     .prize{
       position:absolute;
       width: var(--prizeSize, 92px);
       height: var(--prizeSize, 92px);
-      border-radius:18px;
       display:flex;
       align-items:center;
       justify-content:center;
-      background: rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.16);
-      box-shadow: 0 10px 22px rgba(0,0,0,.25);
       user-select:none;
       z-index:2;
       transform: translate(-50%, -50%) rotate(var(--rot, 0deg));
       transition: transform .18s ease, opacity .18s ease, filter .18s ease;
+
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      border-radius: 0;
+      padding: 0;
     }
     .prize img{
-      width: 92%;
-      height: 92%;
+      width: 100%;
+      height: 100%;
       object-fit: contain;
       pointer-events:none;
       user-drag:none;
       -webkit-user-drag:none;
+      filter: drop-shadow(0 10px 16px rgba(0,0,0,.28));
     }
     .prize.grabbed{
       filter: drop-shadow(0 0 14px rgba(255,255,255,.55));
@@ -260,7 +275,6 @@
       transform: translateX(-50%);
     }
 
-    /* fixed claw viewport */
     .clawBox{
       position:absolute;
       top:18px;
@@ -279,13 +293,12 @@
       display:block;
     }
 
-    /* glass overlay via CSS */
     .glass{
       position:absolute; inset:0;
       background:
         linear-gradient(115deg, rgba(255,255,255,.16), rgba(255,255,255,0) 35%),
         linear-gradient(250deg, rgba(255,255,255,.10), rgba(255,255,255,0) 40%);
-      opacity: .18;
+      opacity: .16;
       pointer-events:none;
       z-index:6;
       mix-blend-mode: screen;
@@ -299,6 +312,7 @@
       border-radius:14px;
       padding:10px;
       z-index:7;
+      backdrop-filter: blur(6px);
     }
     .hint{ color: var(--muted); font-size:12.5px; line-height:1.2; }
     .status{
@@ -309,15 +323,13 @@
       border-radius:999px;
       background: rgba(255,255,255,.06);
       white-space:nowrap;
+      backdrop-filter: blur(6px);
     }
 
     /* Right panel */
     .sidePane{
       padding:14px;
-      background:
-        radial-gradient(520px 320px at 25% 20%, rgba(255,79,216,.10), transparent 62%),
-        radial-gradient(520px 320px at 80% 35%, rgba(124,92,255,.12), transparent 62%),
-        linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));
     }
     .panelBox{
       border-radius:18px;
@@ -328,6 +340,7 @@
       display:flex;
       flex-direction:column;
       gap:12px;
+      backdrop-filter: blur(6px);
     }
     .revealTitle{ font-weight:900; letter-spacing:.3px; margin:0; }
     .revealCard{
@@ -368,7 +381,6 @@
     <div class="grid" id="promptGrid"></div>
   </div>
 
-  <!-- Modal -->
   <div class="modalBackdrop" id="backdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-label="Claw Machine">
       <div class="modalTop">
@@ -393,12 +405,10 @@
               <div class="clawRig">
                 <div class="rail"></div>
                 <div class="cable" id="cable"></div>
-
                 <div class="clawBox" id="clawBox">
                   <img class="clawImg" id="claw" src="assets/machine/ZeeClawOpen.png" alt="claw" />
                 </div>
               </div>
-
               <div class="glass"></div>
             </div>
 
@@ -435,10 +445,6 @@
   </div>
 
 <script>
-/** Backgrounds */
-const BG_ARCADE = "assets/backgrounds/ZeeArcadeBackground.jpeg";
-const BG_MISS   = "assets/backgrounds/ZeeMissBackground.jpg";
-
 /** Claw frames */
 const CLAW_SRC = {
   open:  "assets/machine/ZeeClawOpen.png",
@@ -446,28 +452,32 @@ const CLAW_SRC = {
 };
 
 /**
- * Sizing: match prize edges to closed-claw inner edges by forcing a single prize size.
- * If you want tighter/looser grip, tweak PRIZE_TO_CLAW_GRIP slightly.
+ * Sizing: keep prize size consistent so it looks like the claw can grab it.
+ * Adjust PRIZE_TO_CLAW_GRIP if needed (0.57–0.62 usually).
  */
-const CLAW_BOX_SIZE = 160;        // matches .clawBox
-const PRIZE_TO_CLAW_GRIP = 0.59;  // main knob
+const CLAW_BOX_SIZE = 160;
+const PRIZE_TO_CLAW_GRIP = 0.59;
 const PRIZE_SIZE = Math.round(CLAW_BOX_SIZE * PRIZE_TO_CLAW_GRIP);
 
 /** Movement */
-const START_X_PCT = 10; // top-left X
-const START_Y_PX  = 18; // top-left Y
-const HOLD_Y_OFFSET_PX = 56; // prize hangs under claw center while carried
-
-// Grab point inside clawBox (fraction down from top)
+const START_X_PCT = 10;
+const START_Y_PX  = 18;
+const HOLD_Y_OFFSET_PX = 56;
 const GRAB_POINT_Y_FRAC = 0.74;
 
-/** PROMPTS */
+/**
+ * ✅ Drop area exclusion:
+ * Prizes will NEVER spawn under the claw start (top-left drop zone).
+ * Anything with x < DROP_ZONE_MAX_X is avoided.
+ */
+const DROP_ZONE_MAX_X = 26; // percent (leave a clear lane on the left)
+
+/** PROMPTS (no machine background usage anymore) */
 const PROMPTS = [
   {
     id: "miss",
     title: "Open when you miss me",
     blurb: "A few reminders I’m with you, even far away.",
-    background: BG_MISS,
     prizes: [
       { img: "assets/prizes/ZeeHeartEnvelope.png", label: "Love Letter", note: "I miss you too.\nClose your eyes for 5 seconds and imagine I’m hugging you.\nWe’ll be together soon." },
       { img: "assets/prizes/ZeeMessageInBottle.png", label: "Message in a Bottle", note: "Distance is annoying, but it doesn’t change what we are.\nI’m proud of you. I love you." },
@@ -480,7 +490,6 @@ const PROMPTS = [
     id: "sad",
     title: "Open when you feel sad",
     blurb: "Comfort, no fixing—just love.",
-    background: BG_ARCADE,
     prizes: [
       { img: "assets/prizes/ZeeHeartEnvelope.png", label: "Soft Note", note: "You don’t have to be strong right now.\nI’m here.\nEven quietly, I’m here." },
       { img: "assets/prizes/ZeeGift2.png", label: "Warmth", note: "Breathe out slowly.\nUnclench your jaw.\nYou’re safe. You’re loved." },
@@ -492,7 +501,6 @@ const PROMPTS = [
     id: "happy",
     title: "Open when you feel happy",
     blurb: "I want to celebrate you too.",
-    background: BG_ARCADE,
     prizes: [
       { img: "assets/prizes/ZeeGift3.png", label: "Celebration", note: "I LOVE seeing you happy.\nTell me what happened so I can celebrate properly!!!" },
       { img: "assets/prizes/ZeeGift.png", label: "Proud Moment", note: "You deserve this feeling.\nI’m so proud of you." },
@@ -521,9 +529,8 @@ const claw = document.getElementById("claw");
 
 /** State */
 let currentPrompt = null;
-let prizesDom = [];                 // list of prize elements
-let prizeElByIndex = new Map();     // index -> element
-let remainingIndices = [];          // indices still available to pick
+let prizeElByIndex = new Map();
+let remainingIndices = [];
 let isBusy = false;
 
 /** UI build */
@@ -562,11 +569,6 @@ backdrop.addEventListener("click", (e) => {
 
 /** Helpers */
 function setClawStage(stage){ claw.src = CLAW_SRC[stage]; }
-
-function setPlayfieldBackground(path){
-  playfield.style.backgroundImage = `url("${path}")`;
-}
-
 function setStatus(text){ statusPill.textContent = text; }
 
 function clearReveal(){
@@ -587,15 +589,13 @@ function showReveal(prize, promptTitle){
 }
 
 function clearPrizes(){
-  prizesDom.forEach(d => d.remove());
-  prizesDom = [];
+  [...prizeElByIndex.values()].forEach(el => el.remove());
   prizeElByIndex.clear();
   remainingIndices = [];
 }
 
 /** Positioning & tween */
 function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
-
 function getPlayfieldRect(){ return playfield.getBoundingClientRect(); }
 
 function setClawX(percent){
@@ -634,7 +634,6 @@ function getClawCenterInPlayfield(){
     y: (cr.top + cr.height/2) - pf.top
   };
 }
-
 function positionHeldPrize(prizeEl){
   const pf = getPlayfieldRect();
   const c = getClawCenterInPlayfield();
@@ -652,7 +651,6 @@ function openPrompt(id){
   modalTitle.textContent = currentPrompt.title;
   openModal();
   clearReveal();
-  setPlayfieldBackground(currentPrompt.background);
   spawnPrizes(currentPrompt);
 
   setStatus("Ready");
@@ -660,13 +658,19 @@ function openPrompt(id){
   anotherBtn.classList.add("hidden");
 }
 
+/**
+ * ✅ Spawn spots: exclude the left drop lane under the claw start.
+ * We keep all x >= DROP_ZONE_MAX_X.
+ */
 function spawnPrizes(prompt){
   clearPrizes();
 
-  // layout spots (bottom-ish, cozy pile)
+  // safe spawn spots (x all >= DROP_ZONE_MAX_X)
   const spots = [
-    {x: 18, y: 72}, {x: 40, y: 78}, {x: 62, y: 72}, {x: 78, y: 80}, {x: 52, y: 88}
-  ];
+    {x: 34, y: 70}, {x: 48, y: 78}, {x: 62, y: 72}, {x: 76, y: 80}, {x: 56, y: 88},
+    {x: 38, y: 84}, {x: 70, y: 86},
+  ].filter(s => s.x >= DROP_ZONE_MAX_X);
+
   const shuffled = [...spots].sort(() => Math.random() - 0.5);
 
   prompt.prizes.forEach((pr, i) => {
@@ -675,13 +679,12 @@ function spawnPrizes(prompt){
     el.className = "prize";
     el.style.left = `${spot.x}%`;
     el.style.top  = `${spot.y}%`;
-    el.style.setProperty("--rot", `${(Math.random()*18-9).toFixed(1)}deg`);
+    el.style.setProperty("--rot", `${(Math.random()*16-8).toFixed(1)}deg`);
     el.style.setProperty("--prizeSize", `${PRIZE_SIZE}px`);
     el.dataset.index = String(i);
     el.innerHTML = `<img src="${pr.img}" alt="${pr.label}" draggable="false" />`;
     playfield.appendChild(el);
 
-    prizesDom.push(el);
     prizeElByIndex.set(i, el);
     remainingIndices.push(i);
   });
@@ -707,7 +710,6 @@ function removeAvailableIndex(idx){
 async function doPull(){
   if(isBusy || !currentPrompt) return;
 
-  // no prizes left
   if(!remainingIndices.length){
     setStatus("Empty");
     hintText.textContent = "No prizes left — press Reset prizes.";
@@ -734,7 +736,6 @@ async function doPull(){
   const pickedPrize = currentPrompt.prizes[pickedIndex];
   const targetEl = prizeElByIndex.get(pickedIndex);
 
-  // If somehow missing, remove from pool and retry once
   if(!targetEl){
     removeAvailableIndex(pickedIndex);
     isBusy = false;
@@ -746,105 +747,65 @@ async function doPull(){
   const pf = getPlayfieldRect();
   const tRect = targetEl.getBoundingClientRect();
 
-  // target X percent (center over prize)
   const targetCenterX = (tRect.left + tRect.width/2) - pf.left;
   const targetXPercent = (targetCenterX / pf.width) * 100;
 
-  // target Y px: clawBox top so its grab point meets prize center
   const targetCenterY = (tRect.top + tRect.height/2) - pf.top;
   const grabPointOffsetPx = CLAW_BOX_SIZE * GRAB_POINT_Y_FRAC;
   let targetClawTopPx = targetCenterY - grabPointOffsetPx;
   targetClawTopPx = clamp(targetClawTopPx, 10, pf.height - CLAW_BOX_SIZE + 8);
 
-  // 1) Ensure start position (top-left), open
+  // start position
   setClawStage("open");
   setStatus("Start…");
-  await tween({
-    from: parseFloat(clawBox.style.left || String(START_X_PCT)),
-    to: START_X_PCT,
-    ms: 220,
-    onUpdate: v => setClawX(v)
-  });
-  await tween({
-    from: parseFloat(clawBox.style.top || String(START_Y_PX)),
-    to: START_Y_PX,
-    ms: 220,
-    onUpdate: v => setClawY(v)
-  });
+  await tween({ from: parseFloat(clawBox.style.left || String(START_X_PCT)), to: START_X_PCT, ms: 180, onUpdate: v => setClawX(v) });
+  await tween({ from: parseFloat(clawBox.style.top  || String(START_Y_PX)),  to: START_Y_PX,  ms: 180, onUpdate: v => setClawY(v) });
 
-  // 2) Move RIGHT to target X (while staying up)
+  // move right then down
   setStatus("Moving right…");
-  hintText.textContent = "Moving into position…";
-  await tween({
-    from: START_X_PCT,
-    to: targetXPercent,
-    ms: 650,
-    onUpdate: v => setClawX(v)
-  });
+  await tween({ from: START_X_PCT, to: targetXPercent, ms: 650, onUpdate: v => setClawX(v) });
 
-  // 3) Move DOWN to target Y
   setStatus("Dropping…");
-  await tween({
-    from: START_Y_PX,
-    to: targetClawTopPx,
-    ms: 520,
-    onUpdate: v => setClawY(v)
-  });
+  await tween({ from: START_Y_PX, to: targetClawTopPx, ms: 520, onUpdate: v => setClawY(v) });
 
-  // 4) Close + grab (carry the REAL element)
+  // close + grab (carry real element)
   setStatus("Grabbing…");
   setClawStage("close");
-
   targetEl.classList.add("grabbed");
   targetEl.style.setProperty("--rot", "0deg");
   targetEl.style.zIndex = "6";
   targetEl.style.transition = "none";
   positionHeldPrize(targetEl);
-
   await new Promise(r => setTimeout(r, 140));
 
-  // 5) Move UP back to start Y (still at target X)
+  // lift then return left
   setStatus("Lifting…");
   await tween({
-    from: targetClawTopPx,
-    to: START_Y_PX,
-    ms: 520,
-    onUpdate: v => {
-      setClawY(v);
-      positionHeldPrize(targetEl);
-    }
+    from: targetClawTopPx, to: START_Y_PX, ms: 520,
+    onUpdate: v => { setClawY(v); positionHeldPrize(targetEl); }
   });
 
-  // 6) Move LEFT back to start X
   setStatus("Returning…");
   await tween({
-    from: targetXPercent,
-    to: START_X_PCT,
-    ms: 650,
-    onUpdate: v => {
-      setClawX(v);
-      positionHeldPrize(targetEl);
-    }
+    from: targetXPercent, to: START_X_PCT, ms: 650,
+    onUpdate: v => { setClawX(v); positionHeldPrize(targetEl); }
   });
 
-  // 7) Open + drop the gift at the start position
+  // open + drop at left lane
   setStatus("Dropping prize…");
   setClawStage("open");
   hintText.textContent = "Prize dropped. Note revealed on the right.";
 
-  // Drop animation for the SAME element
   targetEl.style.transition = "transform .35s ease, opacity .35s ease";
   targetEl.style.transform = "translate(-10px, 260px) scale(.92) rotate(-10deg)";
   targetEl.style.opacity = "0";
 
   await new Promise(r => setTimeout(r, 380));
 
-  // Remove from DOM + availability pool
   targetEl.remove();
   prizeElByIndex.delete(pickedIndex);
   removeAvailableIndex(pickedIndex);
 
-  // Reveal note
   setStatus("✅ Won!");
   showReveal(pickedPrize, currentPrompt.title);
 
@@ -854,11 +815,7 @@ async function doPull(){
 }
 
 dropBtn.addEventListener("click", doPull);
-
-anotherBtn.addEventListener("click", () => {
-  clearReveal();
-  doPull();
-});
+anotherBtn.addEventListener("click", () => { clearReveal(); doPull(); });
 
 resetBtn.addEventListener("click", () => {
   if(!currentPrompt || isBusy) return;
