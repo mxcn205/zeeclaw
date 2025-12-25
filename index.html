@@ -8,7 +8,6 @@
   <style>
     :root{
       --text:#eaf0ff;
-      --muted:#b9c4ff;
 
       --pink:#FFE6EE;
       --pink-2:#FFD6E3;
@@ -48,7 +47,6 @@
     }
 
     .wrap{width:min(1100px,100%)}
-    header{display:none;}
 
     .homeGrid{
       display:grid;
@@ -206,6 +204,28 @@
       background: rgba(255,255,255,.20);
     }
 
+    /* ✅ Small drop box on the left (inside playfield) */
+    .dropZone{
+      position:absolute;
+      left:10px;
+      bottom:10px;
+      width:92px;
+      height:64px;
+      border-radius:14px;
+      border:1px solid rgba(80,20,40,.22);
+      background: rgba(255,255,255,.45);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.25);
+      z-index:5;
+    }
+    .dropZone::after{
+      content:"";
+      position:absolute;
+      inset:10px 10px 12px;
+      border-radius:12px;
+      border:1px dashed rgba(80,20,40,.18);
+      background: rgba(255,255,255,.18);
+    }
+
     .glass{
       position:absolute; inset:0;
       background:
@@ -335,7 +355,14 @@
       gap:10px;
     }
     .revealCard .big{ font-size:14px; color: var(--pink-text-muted); line-height:1.5; }
-    .revealCard .msg{ font-size:14.5px; line-height:1.6; white-space:pre-wrap; }
+
+    /* ✅ slightly bigger message text */
+    .revealCard .msg{
+      font-size:15.5px;   /* was 14.5px */
+      line-height:1.65;
+      white-space:pre-wrap;
+    }
+
     .hidden{ display:none !important; }
     .pulse{ animation: pulse .9s ease-in-out infinite; }
     @keyframes pulse{
@@ -364,6 +391,9 @@
         <div class="machinePane">
           <div class="machine" id="machine">
             <div class="playfield" id="playfield">
+              <!-- ✅ drop box -->
+              <div class="dropZone" aria-hidden="true"></div>
+
               <div class="clawRig">
                 <div class="rail"></div>
                 <div class="cable" id="cable"></div>
@@ -421,7 +451,6 @@ const HOME_GIFS = {
   sad:     "assets/buttons/ZeeMMSad.gif",
 };
 
-/* ✅ Blurbs updated + order will be controlled in the render list below */
 const PROMPTS = [
   {
     id: "happy",
@@ -495,11 +524,7 @@ let prizeElByIndex = new Map();
 let remainingIndices = [];
 let isBusy = false;
 
-/** ✅ Home order: 
-    - Put SAD where HAPPY currently is (top-left)
-    - Put HAPPY where STRESSED currently is (top-right)
-    - Other two: any order (bottom row)
-*/
+/** Home order requirement */
 const HOME_ORDER_IDS = ["sad", "happy", "miss", "stressed"];
 
 function makeHomeCard(p){
@@ -668,7 +693,7 @@ async function doPull(){
 
   if(!remainingIndices.length){
     setStatus("ready");
-    hintText.textContent = "No prizes left — press Reset prizes.";
+    hintText.textContent = "Reset prizes for more!"; // ✅ updated
     return;
   }
 
@@ -696,7 +721,7 @@ async function doPull(){
   const targetXPercent = (targetCenterX / pf.width) * 100;
 
   const targetCenterY = (tRect.top + tRect.height/2) - pf.top;
-  const grabPointOffsetPx = CLAW_BOX_SIZE * GRAB_POINT_Y_FRAC;
+  const grabPointOffsetPx = CLAW_BOX_SIZE * 0.74;
   let targetClawTopPx = clamp(targetCenterY - grabPointOffsetPx, 10, pf.height - CLAW_BOX_SIZE + 8);
 
   setClawStage("open");
